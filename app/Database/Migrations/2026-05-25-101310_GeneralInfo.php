@@ -10,6 +10,7 @@ class GeneralInfo extends Migration
 
     // common information
     protected $table = 'site_code';
+    protected $DBGroup = 'default';
 
     public function up()
     {
@@ -28,8 +29,10 @@ class GeneralInfo extends Migration
             ],
         ]);
 
+        // table attribute
         $this->forge->addPrimaryKey('idx');
         $this->forge->addUniqueKey('code', "uq_" . $this->table);
+        // create the table
         $this->forge->createTable($this->table);
     }
 

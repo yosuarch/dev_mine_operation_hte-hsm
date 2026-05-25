@@ -7,7 +7,8 @@ use CodeIgniter\Database\Migration;
 class EquipmentRegister extends Migration
 {
     // common info
-    protected $table = 'dept_code';
+    protected $table = 'equipment_register';
+    protected $DBGroup = 'default';
 
     public function up()
     {
@@ -20,7 +21,7 @@ class EquipmentRegister extends Migration
         //             'unsigned' => true,
         //             'auto_increment' => true,
         //         ],
-        //         'code'
+        //         'code' => [],
         //     ],
         // ]);
     }
