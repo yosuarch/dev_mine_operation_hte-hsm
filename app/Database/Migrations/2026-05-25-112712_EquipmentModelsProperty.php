@@ -3,18 +3,16 @@
 namespace App\Database\Migrations;
 
 use CodeIgniter\Database\Migration;
-use PHPUnit\Framework\Constraint\Constraint;
 
-class GeneralInfo extends Migration
+class EquipmentModelsProperty extends Migration
 {
-
-    // common information
-    protected $table = 'site_code';
+    // common info
+    protected $table = 'equipment_models_property';
     protected $DBGroup = 'default';
 
     public function up()
     {
-        // create the table
+        // field's
         $this->forge->addField([
             'idx' => [
                 'type' => 'int',
@@ -22,7 +20,17 @@ class GeneralInfo extends Migration
                 'unsigned' => true,
                 'auto_increment' => true,
             ],
-            'code' => [
+            'model' => [
+                'type' => 'varchar',
+                'constraint' => 32,
+                'null' => false,
+            ],
+            'type' => [
+                'type' => 'varchar',
+                'constraint' => 64,
+                'null' => false,
+            ],
+            'brand' => [
                 'type' => 'varchar',
                 'constraint' => 32,
                 'null' => false,
@@ -31,7 +39,8 @@ class GeneralInfo extends Migration
 
         // table attribute
         $this->forge->addPrimaryKey('idx');
-        $this->forge->addUniqueKey('code', "uq_" . $this->table . '_idx');
+        $this->forge->addUniqueKey('model', "uq_" . $this->table . '_idx');
+
         // create the table
         $this->forge->createTable($this->table);
     }

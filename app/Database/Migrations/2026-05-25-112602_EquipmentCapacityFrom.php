@@ -3,18 +3,17 @@
 namespace App\Database\Migrations;
 
 use CodeIgniter\Database\Migration;
-use PHPUnit\Framework\Constraint\Constraint;
 
-class GeneralInfo extends Migration
+class EquipmentCapacityFrom extends Migration
 {
 
-    // common information
-    protected $table = 'site_code';
+    // common info
+    protected $table = 'equipment_capacity_from';
     protected $DBGroup = 'default';
 
     public function up()
     {
-        // create the table
+        // field's
         $this->forge->addField([
             'idx' => [
                 'type' => 'int',
@@ -32,6 +31,7 @@ class GeneralInfo extends Migration
         // table attribute
         $this->forge->addPrimaryKey('idx');
         $this->forge->addUniqueKey('code', "uq_" . $this->table . '_idx');
+
         // create the table
         $this->forge->createTable($this->table);
     }

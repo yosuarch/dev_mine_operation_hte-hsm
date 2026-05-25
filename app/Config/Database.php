@@ -26,9 +26,9 @@ class Database extends Config
      */
     public array $default = [
         'DSN'          => '',
-        'hostname'     => '10.10.3.7',
+        'hostname'     => '127.0.0.1',
         'username'     => 'root',
-        'password'     => 'mariadb',
+        'password'     => 'Daong_Kring12',
         'database'     => '',
         'DBDriver'     => 'MySQLi',
         'DBPrefix'     => '',
@@ -41,7 +41,7 @@ class Database extends Config
         'compress'     => false,
         'strictOn'     => false,
         'failover'     => [],
-        'port'         => 7050,
+        'port'         => 3306,
         'numberNative' => false,
         'foundRows'    => false,
         'dateFormat'   => [
@@ -59,9 +59,9 @@ class Database extends Config
 
     public array $session = [
         'DSN'          => '',
-        'hostname'     => '10.10.3.7',
+        'hostname'     => '127.0.0.1',
         'username'     => 'root',
-        'password'     => 'mariadb',
+        'password'     => 'Daong_Kring12',
         'database'     => '',
         'DBDriver'     => 'MySQLi',
         'DBPrefix'     => '',
@@ -74,7 +74,7 @@ class Database extends Config
         'compress'     => false,
         'strictOn'     => false,
         'failover'     => [],
-        'port'         => 7050,
+        'port'         => 3306,
         'numberNative' => false,
         'foundRows'    => false,
         'dateFormat'   => [
@@ -113,7 +113,7 @@ class Database extends Config
     //     */
     //    public array $default = [
     //        'DSN'        => '',
-    //        'hostname'   => 'localhost',
+    //        'hostname'   => '127.0.0.1',
     //        'username'   => 'root',
     //        'password'   => 'root',
     //        'database'   => 'ci4',
@@ -140,7 +140,7 @@ class Database extends Config
     //     */
     //    public array $default = [
     //        'DSN'        => '',
-    //        'hostname'   => 'localhost',
+    //        'hostname'   => '127.0.0.1',
     //        'username'   => 'root',
     //        'password'   => 'root',
     //        'database'   => 'ci4',
@@ -173,7 +173,7 @@ class Database extends Config
     //     * @var array<string, mixed>
     //     */
     //    public array $default = [
-    //        'DSN'        => 'localhost:1521/FREEPDB1',
+    //        'DSN'        => '127.0.0.1:1521/FREEPDB1',
     //        'username'   => 'root',
     //        'password'   => 'root',
     //        'DBDriver'   => 'OCI8',
