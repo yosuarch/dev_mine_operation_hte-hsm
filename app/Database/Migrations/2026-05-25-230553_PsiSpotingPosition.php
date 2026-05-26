@@ -4,16 +4,16 @@ namespace App\Database\Migrations;
 
 use CodeIgniter\Database\Migration;
 
-class PsiSpotingPoint extends Migration // PSI is stand for Pre-Start Inspection
+class PsiSpotingPosition extends Migration
 {
 
     // common info
-    protected $table = 'psi_spot_point';
+    protected $table = 'psi_spoting_position';
     protected $DBGroup = 'default';
 
     public function up()
     {
-        // create the table
+        // create table
         $this->forge->addField([
             'idx' => [
                 'type' => 'int',
@@ -23,14 +23,8 @@ class PsiSpotingPoint extends Migration // PSI is stand for Pre-Start Inspection
             ],
             'code' => [
                 'type' => 'varchar',
-                'constraint' => 6,
+                'constraint' => 32,
                 'null' => false,
-                'comment' => 'this is the spoting code',
-            ],
-            'description' => [
-                'type' => 'text',
-                'null' => false,
-                'comment' => 'this is the spoting code description, perhaps it will only be two-part such as in/outside of cabin',
             ],
         ]);
 
