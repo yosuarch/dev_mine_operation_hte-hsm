@@ -25,6 +25,9 @@ class PsiRecord extends Migration
                 'type' => 'int',
                 'null' => false,
             ],
+            'date' => [
+                'type' => 'date',
+            ],
             'shift' => [
                 'type' => 'tinyint',
                 'constraint' => 1,
@@ -47,10 +50,26 @@ class PsiRecord extends Migration
                 'constraint' => '18,2',
                 'null' => false,
             ],
+            'checking_part' => [
+                'type' => 'int',
+                'constraint' => 6,
+                'unsigned' => true,
+                'null' => false,
+                'comment' => 'this field must have content'
+            ],
+            'checking_status' => [
+                'type' => 'tinyint',
+                'constraint' => 1,
+            ],
+            'checking_note' => [
+                'type' => 'text',
+                'default' => 'no issue',
+            ],
             'inserted_by' => [
                 'type' => 'int',
                 'constraint' => 3,
                 'unsigned' => true,
+                'null' => true,
                 'comment' => 'user account that input the data',
             ],
             'created_at' => [
@@ -72,7 +91,7 @@ class PsiRecord extends Migration
 
         // table attribute
         $this->forge->addPrimaryKey('idx');
-        $this->forge->addUniqueKey(['equipment_id', 'shift', 'operator_name', 'hourmeter_start', 'hourmeter_end'], "uq_" . $this->table . '_idx');
+        $this->forge->addUniqueKey(['equipment_id', 'shift', 'operator_name', 'hourmeter_start', 'hourmeter_end', 'checking_part'], "uq_" . $this->table . '_idx');
 
         // create the table
         $this->forge->createTable($this->table);
