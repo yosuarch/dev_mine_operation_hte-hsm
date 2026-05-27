@@ -27,6 +27,12 @@ class PsiUniqueObservedItem extends Migration
                 'null' => false,
                 'comment' => 'this field is base on the existing and unique value of P2H sheet, in the future maybe it will be change',
             ],
+            'checking_part_idn' => [
+                'type' => 'varchar',
+                'constraint' => 64,
+                'null' => false,
+                'comment' => 'this field is base on the existing and unique value of P2H sheet but in indonesian',
+            ],
             'spot' => [
                 'type' => 'int',
                 'constraint' => 2,

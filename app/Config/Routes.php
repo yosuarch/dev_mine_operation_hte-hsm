@@ -9,8 +9,8 @@ $routes->get('/prestart-insepction', 'PrestartInspection\ControllerPSI::index');
 $routes->get('/manpower', 'Manpower\ControllerManpower::index');
 
 // uploads and preview
-$routes->post('/preview-psi-record', 'PrestartInspection\PreviewBeforeUpload::index');
-$routes->post('/upload-psi-record', 'PrestartInspection\UploadPSIRecord::index');
+$routes->post('/preview-psi-record', 'PrestartInspection\PreviewBeforeUpload::index'); // preview the file
+$routes->post('/upload-psi-record', 'PrestartInspection\UploadPSIRecord::index'); // upload the file
 
 // ajax routes
 $routes->get('/ajax-datatable/prestartrecord', 'PrestartInspection\ControllerGetData::fetchPSIDetail');

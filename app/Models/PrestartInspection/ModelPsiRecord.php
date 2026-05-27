@@ -70,30 +70,32 @@ class ModelPsiRecord extends Model
     // fetch the record
     public function getPSIRecordDetails()
     {
-        // return the result with custom query
-        return $this->db->table($this->table)
+        return $this->db->table('psi_record')
             ->select([
-                'psi_record.date AS date',
-                'mp_list.name AS name',
+                'psi_record.DATE AS date',
+                'mp_list.`name` AS operator_name',
                 'mp_list.employee_id AS employee_id',
                 'general_gender.gender AS gender',
                 'CONCAT(equipment_register.text_code, equipment_register.num_code) AS equipment_id',
-                'equipment_models_property.type AS type',
                 'equipment_models_property.model AS model',
+                'equipment_models_property.type AS type',
                 'psi_record.hourmeter_start AS hm_start',
                 'psi_record.hourmeter_end AS hm_end',
-                "GROUP_CONCAT(psi_observed_item.checking_part SEPARATOR ', ') AS check_item",
-                'ohse_danger_code.code AS hazard_code',
-                "GROUP_CONCAT(psi_record.checking_note SEPARATOR ', ') AS operator_note"
+                "GROUP_CONCAT(psi_unique_observed_item.checking_part) AS check_item",
+                'ohse_danger_code.`code` AS danger_code',
+                "GROUP_CONCAT(psi_record.checking_note) AS note"
             ])
             ->join('equipment_register', 'psi_record.equipment_id = equipment_register.idx', 'left')
-            ->join('psi_observed_item', 'psi_record.checking_part = psi_observed_item.idx', 'left')
-            ->join('ohse_danger_code', 'psi_observed_item.danger_tag = ohse_danger_code.idx', 'left')
-            ->join('equipment_models_property', 'psi_observed_item.equipment_type = equipment_models_property.idx', 'left')
+            ->join('equipment_models_property', 'equipment_register.model = equipment_models_property.idx', 'left')
+            ->join('psi_unique_observed_item', 'psi_record.checking_part = psi_unique_observed_item.idx', 'left')
+            ->join('ohse_danger_code', 'psi_unique_observed_item.danger_tag = ohse_danger_code.idx', 'left')
+            ->join('psi_spoting_position', 'psi_unique_observed_item.spot = psi_spoting_position.idx', 'left')
             ->join('mp_list', 'psi_record.operator_name = mp_list.idx', 'left')
             ->join('general_gender', 'mp_list.gender = general_gender.idx', 'left')
-            ->where('psi_record.checking_status', 1)
-            ->groupBy('psi_record.equipment_id')
-            ->groupBy('ohse_danger_code.idx');
+            ->join('general_working_shift', 'psi_record.shift = general_working_shift.idx', 'left')
+            ->groupBy([
+                'psi_record.DATE',
+                'psi_record.shift'
+            ]);
     }
 }
