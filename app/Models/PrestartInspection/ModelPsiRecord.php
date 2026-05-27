@@ -1,0 +1,99 @@
+<?php
+
+namespace App\Models\PrestartInspection;
+
+use CodeIgniter\Model;
+use CodeIgniter\Database;
+
+class ModelPsiRecord extends Model
+{
+    protected $table            = 'psi_record';
+    protected $primaryKey       = 'idx';
+    protected $useAutoIncrement = true;
+    protected $returnType       = 'array';
+    protected $useSoftDeletes   = true;
+    protected $protectFields    = true;
+    protected $allowedFields    = [
+        'equipment_id',
+        'date',
+        'shift',
+        'operator_name',
+        'hourmeter_start',
+        'hourmeter_end',
+        'checking_part',
+        'checking_status',
+        'checking_note',
+        'inserted_by',
+    ];
+
+    protected bool $allowEmptyInserts = true;
+    protected bool $updateOnlyChanged = true;
+
+    // protected array $casts = [];
+    // protected array $castHandlers = [];
+
+    // Dates
+    protected $useTimestamps = false;
+    protected $dateFormat    = 'datetime';
+    protected $createdField  = 'created_at';
+    protected $updatedField  = 'updated_at';
+    protected $deletedField  = 'deleted_at';
+
+    // Validation
+    // protected $validationRules      = [];
+    // protected $validationMessages   = [];
+    // protected $skipValidation       = false;
+    // protected $cleanValidationRules = true;
+
+    // Callbacks
+    // protected $allowCallbacks = true;
+    // protected $beforeInsert   = [];
+    // protected $afterInsert    = [];
+    // protected $beforeUpdate   = [];
+    // protected $afterUpdate    = [];
+    // protected $beforeFind     = [];
+    // protected $afterFind      = [];
+    // protected $beforeDelete   = [];
+    // protected $afterDelete    = [];
+
+    // public function getPSIRecord()
+    // {
+    //     return DataTable::of($this)
+    //         ->add('equipment_id')
+    //         ->add('date')
+    //         ->add('shift')
+    //         ->add('operator_name')
+    //         ->add('checking_status')
+    //         ->toJson();
+    // }
+
+    // fetch the record
+    public function getPSIRecordDetails()
+    {
+        // return the result with custom query
+        return $this->db->table($this->table)
+            ->select([
+                'psi_record.date AS date',
+                'mp_list.name AS name',
+                'mp_list.employee_id AS employee_id',
+                'general_gender.gender AS gender',
+                'CONCAT(equipment_register.text_code, equipment_register.num_code) AS equipment_id',
+                'equipment_models_property.type AS type',
+                'equipment_models_property.model AS model',
+                'psi_record.hourmeter_start AS hm_start',
+                'psi_record.hourmeter_end AS hm_end',
+                "GROUP_CONCAT(psi_observed_item.checking_part SEPARATOR ', ') AS check_item",
+                'ohse_danger_code.code AS hazard_code',
+                "GROUP_CONCAT(psi_record.checking_note SEPARATOR ', ') AS operator_note"
+            ])
+            ->join('equipment_register', 'psi_record.equipment_id = equipment_register.idx', 'left')
+            ->join('psi_observed_item', 'psi_record.checking_part = psi_observed_item.idx', 'left')
+            ->join('ohse_danger_code', 'psi_observed_item.danger_tag = ohse_danger_code.idx', 'left')
+            ->join('equipment_models_property', 'psi_observed_item.equipment_type = equipment_models_property.idx', 'left')
+            ->join('mp_list', 'psi_record.operator_name = mp_list.idx', 'left')
+            ->join('general_gender', 'mp_list.gender = general_gender.idx', 'left')
+            ->where('psi_record.checking_status', 1)
+            ->groupBy('psi_record.equipment_id')
+            ->groupBy('ohse_danger_code.idx');
+    }
+}

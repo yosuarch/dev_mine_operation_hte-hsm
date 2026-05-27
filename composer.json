@@ -13,6 +13,7 @@
         "php": "^8.2",
         "codeigniter4/framework": "^4.7",
         "codeigniter4/shield": "^1.3",
+        "hermawan/codeigniter4-datatables": "^0.8.0",
         "phpoffice/phpspreadsheet": "^5.7"
     },
     "require-dev": {
