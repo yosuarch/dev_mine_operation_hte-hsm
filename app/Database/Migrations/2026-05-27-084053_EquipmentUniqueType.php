@@ -35,11 +35,12 @@ class EquipmentUniqueType extends Migration
         $this->forge->addUniqueKey('code', "uq_" . $this->table . '_for_idx');
 
         // create the table
-        $this->forge->createTable($this->table);
+        $this->forge->createTable($this->table, true);
     }
 
     public function down()
     {
-        //
+        // drop the table
+        $this->forge->dropTable($this->table);
     }
 }

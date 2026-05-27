@@ -35,14 +35,26 @@ class ManPowerName extends Migration
                 'unsigned' => true,
                 'null' => false,
             ],
-            'first_phone_number' => [],
-            'second_phone_number' => [],
-            'emergency_contact_number' => [],
+            'first_phone_number' => [
+                'type' => 'varchar',
+                'constraint' => 32,
+                'null' => true,
+            ],
+            'second_phone_number' => [
+                'type' => 'varchar',
+                'constraint' => 32,
+                'null' => true,
+            ],
+            'emergency_contact_number' => [
+                'type' => 'varchar',
+                'constraint' => 32,
+                'null' => true,
+            ],
         ]);
 
         // table attribute
         $this->forge->addPrimaryKey('idx');
-        $this->forge->addUniqueKey(['employee_id', 'gender'], "uq_" . $this->table . '_idx');
+        $this->forge->addUniqueKey(['name', 'employee_id', 'gender'], "uq_" . $this->table . '_idx');
 
         // create the table
         $this->forge->createTable($this->table);
