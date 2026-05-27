@@ -28,7 +28,7 @@
     </nav>
 
     <!-- Main Layout Container -->
-    <div class="d-flex" style="min-height: calc(100vh - 56px);">
+    <div class="d-flex p-0 m-0" style="min-height: calc(100vh - 56px);">
         <!-- Sidebar -->
         <aside class="bg-light" style="width: 250px; flex-shrink: 0; border-right: 1px solid #dee2e6;">
             <?= view('components/sidebar') ?>
@@ -44,7 +44,7 @@
 
     <!-- Footer -->
     <footer class="bg-light border-top mt-5">
-        <div class="container-fluid">
+        <div class="container-fluid p-0 m-0">
             <?= view('components/footer') ?>
         </div>
     </footer>
