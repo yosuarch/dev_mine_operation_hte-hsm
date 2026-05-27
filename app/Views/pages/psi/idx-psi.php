@@ -6,11 +6,9 @@
 <p>Lorem ipsum, dolor sit amet consectetur adipisicing elit. Facilis quaerat hic in veritatis fugiat. Ab, libero? Amet numquam blanditiis temporibus aperiam. Maiores nesciunt quae perferendis.</p>
 <br>
 <div class="col-lg-12 p-0 m-0">
-    <div class="btn-group" role="group" aria-label="Basic example">
-        <button type="button" class="btn btn-primary">Upload</button>
-        <button type="button" class="btn btn-primary">Download</button>
-        <button type="button" class="btn btn-primary">Create Report</button>
-    </div>
+    <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#staticBackdrop">
+        Import Record
+    </button>
     <h3>raw recorded data</h3>
     <div style="overflow-x: auto;">
         <!-- recorded table -->
@@ -38,6 +36,63 @@
     </div>
 </div>
 <?= $this->endSection(); ?>
+
+<!-- modal -->
+<?= $this->section('modal'); ?>
+<!-- Modal -->
+<div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog modal-fullscreen">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="staticBackdropLabel">Pre-Start Inspection Import</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="psiForm" method="post" action="/upload-psi-record" enctype="multipart/form-data">
+                    <div class="row">
+                        <div class="col-lg-4">
+                            <div class="mb-3">
+                                <label for="formFile" class="form-label">Default file input example</label>
+                                <input class="form-control" type="file" id="formFile" name="psiRecording">
+                            </div>
+                            <p><small>only excel file less than 5mb can be upload</small></p>
+                            <button type="button" id="previewPSIFile" class="btn btn-outline-info">Preview</button>
+                        </div>
+                        <div class="col-lg-8">
+                            <p>Lorem ipsum dolor sit amet.</p>
+                        </div>
+                        <div class="col-lg-12">
+                            <!-- preview table -->
+                            <table id="filePreview" class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Equipment ID</th>
+                                        <th>Date</th>
+                                        <th>Shift</th>
+                                        <th>Operator Name</th>
+                                        <th>HM Start</th>
+                                        <th>HM End</th>
+                                        <th>Checking Item</th>
+                                        <th>Checking Note</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- body from json -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-warning">Submit</button>
+            </div>
+        </div>
+    </div>
+</div>
+<?= $this->endSection(); ?>
+
 <?= $this->section('script'); ?>
 <script>
     $(document).ready(function() {
@@ -107,6 +162,53 @@
                     }
                 },
             ]
+        });
+
+        $('#previewPSIFile').click(function() {
+            const fileInput = $('#formFile')[0];
+            const file = fileInput.files[0];
+
+            if (!file) {
+                alert('Please select a file first');
+                return;
+            }
+
+            // Create FormData and send via AJAX
+            const formData = new FormData();
+            formData.append('psiRecording', file);
+
+            $.ajax({
+                url: '/preview-psi-record',
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                dataType: 'json',
+                success: function(response) {
+                    if (response.success) {
+                        // Populate the preview table
+                        let rows = '';
+                        response.data.forEach(row => {
+                            rows += `<tr>
+                            <td>${row.equipment_id}</td>
+                            <td>${row.date}</td>
+                            <td>${row.shift}</td>
+                            <td>${row.operator_name}</td>
+                            <td>${row.hourmeter_start}</td>
+                            <td>${row.hourmeter_end}</td>
+                            <td>${row.checking_part}</td>
+                            <td>${row.checking_note}</td>
+                        </tr>`;
+                        });
+                        $('#filePreview tbody').html(rows);
+                    } else {
+                        alert('Error: ' + response.message);
+                    }
+                },
+                error: function() {
+                    alert('Error previewing file');
+                }
+            });
         });
     });
 </script>

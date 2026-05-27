@@ -8,7 +8,9 @@ $routes->get('/', 'DashboardRender::index');
 $routes->get('/prestart-insepction', 'PrestartInspection\ControllerPSI::index');
 $routes->get('/manpower', 'Manpower\ControllerManpower::index');
 
-
+// uploads and preview
+$routes->post('/preview-psi-record', 'PrestartInspection\PreviewBeforeUpload::index');
+$routes->post('/upload-psi-record', 'PrestartInspection\UploadPSIRecord::index');
 
 // ajax routes
 $routes->get('/ajax-datatable/prestartrecord', 'PrestartInspection\ControllerGetData::fetchPSIDetail');
