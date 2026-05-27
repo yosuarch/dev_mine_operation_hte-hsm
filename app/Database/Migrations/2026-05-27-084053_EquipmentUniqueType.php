@@ -13,11 +13,26 @@ class EquipmentUniqueType extends Migration
 
     public function up()
     {
-        //
+        // craete table
+        $this->forge->addField([
+            'idx' => [
+                'type' => 'int',
+                'constraint' => 3,
+                'unsigned' => true,
+                'auto_increment' => true,
+            ],
+            'code' => [
+                'type' => 'varchar',
+                'constraint' => 64,
+                'null' => false,
+                'comment' => 'unique equipment type',
+            ],
+        ]);
+
 
         // table attribute
         $this->forge->addPrimaryKey('idx');
-        $this->forge->addUniqueKey('checking_part', "uq_" . $this->table . '_idx');
+        $this->forge->addUniqueKey('code', "uq_" . $this->table . '_for_idx');
 
         // create the table
         $this->forge->createTable($this->table);

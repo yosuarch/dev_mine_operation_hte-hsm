@@ -35,6 +35,9 @@ class ManPowerName extends Migration
                 'unsigned' => true,
                 'null' => false,
             ],
+            'first_phone_number' => [],
+            'second_phone_number' => [],
+            'emergency_contact_number' => [],
         ]);
 
         // table attribute
