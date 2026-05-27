@@ -49,4 +49,18 @@ class ManPowerList extends Model
     // protected $afterFind      = [];
     // protected $beforeDelete   = [];
     // protected $afterDelete    = [];
+
+    public function fetchManpPowerList()
+    {
+        //
+        return $this->db->table($this->table)
+            ->select([
+                'mp_list.idx AS idx',
+                'mp_list.name AS name',
+                'mp_list.employee_id AS employee_id',
+                'general_gender.gender AS gender',
+                'mp_list.first_phone_number AS phone_number',
+            ])
+            ->join('general_gender', 'mp_list.gender = general_gender.idx', 'left');
+    }
 }

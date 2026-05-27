@@ -12,6 +12,6 @@ $routes->get('/manpower', 'Manpower\ControllerManpower::index');
 
 // ajax routes
 $routes->get('/ajax-datatable/prestartrecord', 'PrestartInspection\ControllerGetData::fetchPSIDetail');
-$routes->get('/ajax-datatable/manpowerlist', '---::fetchPSIDetail');
+$routes->get('/ajax-datatable/manpowerlist', 'Manpower\ControllerGetData::fetchManPowerList');
 
 service('auth')->routes($routes);
