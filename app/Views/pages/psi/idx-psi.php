@@ -1,5 +1,15 @@
 <?= $this->extend('layouts/main_layout') ?>
 
+<?= $this->section('pageStyles'); ?>
+<!-- DataTables Bootstrap5 CSS -->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+<!-- DataTables CSS -->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+<!-- date range picker -->
+<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
+<?= $this->endSection(); ?>
+
+
 <?= $this->section('content'); ?>
 <?php if (session()->has('inserted')): ?>
     <div class="alert alert-info alert-dismissible fade show" role="alert">
@@ -167,6 +177,18 @@
 <?= $this->endSection(); ?>
 
 <?= $this->section('script'); ?>
+<!-- jQuery -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<!-- moment.js -->
+<script src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
+<!-- DataTables Core JS -->
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<!-- DataTables Bootstrap5 JS -->
+<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+<!-- daterange picker -->
+<script src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
+<!-- bootstrap js -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
 <script>
     $(document).ready(function() {
         $('#prestartInspectionTable').DataTable({

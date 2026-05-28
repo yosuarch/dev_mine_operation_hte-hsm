@@ -43,12 +43,12 @@ class PsiRecord extends Migration
             'hourmeter_start' => [
                 'type' => 'decimal',
                 'constraint' => '18,2',
-                'null' => false,
+                'null' => true,
             ],
             'hourmeter_end' => [
                 'type' => 'decimal',
                 'constraint' => '18,2',
-                'null' => false,
+                'null' => true,
             ],
             'checking_part' => [
                 'type' => 'int',
