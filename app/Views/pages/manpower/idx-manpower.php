@@ -1,5 +1,14 @@
 <?= $this->extend('layouts/main_layout') ?>
 
+<?= $this->section('pageStyles'); ?>
+<!-- DataTables Bootstrap5 CSS -->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+<!-- DataTables CSS -->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+<!-- date range picker -->
+<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
+<?= $this->endSection(); ?>
+
 <?= $this->section('content'); ?>
 <!-- body -->
 <div class="col-lg-8">
@@ -21,12 +30,18 @@
 </div>
 <?= $this->endSection(); ?>
 
-<?= $this->section('script'); ?>
-<!-- DataTables Buttons CSS -->
-<link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.1/css/buttons.dataTables.min.css">
-<!-- DataTables Responsive CSS -->
-<link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.dataTables.min.css">
+<?= $this->section('main-js'); ?>
+<!-- jQuery -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<!-- bootstrap js -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+<!-- DataTables Core JS -->
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<!-- DataTables Bootstrap5 JS -->
+<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+<?= $this->endSection(); ?>
 
+<?= $this->section('script'); ?>
 <!-- DataTables Buttons JS -->
 <script src="https://cdn.datatables.net/buttons/2.4.1/js/dataTables.buttons.min.js"></script>
 <!-- JSZip for Excel export -->
@@ -37,7 +52,7 @@
 <!-- DataTables Button HTML5 export -->
 <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.html5.min.js"></script>
 <!-- DataTables Responsive JS -->
-<script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
+<!-- <script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script> -->
 
 <!-- javascript -->
 <script>

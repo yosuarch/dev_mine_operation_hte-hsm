@@ -176,19 +176,22 @@
 
 <?= $this->endSection(); ?>
 
-<?= $this->section('script'); ?>
+<?= $this->section('main-js'); ?>
 <!-- jQuery -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<!-- moment.js -->
-<script src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
+<!-- bootstrap js -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
 <!-- DataTables Core JS -->
 <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
 <!-- DataTables Bootstrap5 JS -->
 <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+<?= $this->endSection(); ?>
+
+<?= $this->section('script'); ?>
+<!-- moment.js -->
+<script src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
 <!-- daterange picker -->
-<script src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
-<!-- bootstrap js -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>pt>
 <script>
     $(document).ready(function() {
         $('#prestartInspectionTable').DataTable({

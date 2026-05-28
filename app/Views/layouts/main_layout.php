@@ -43,6 +43,7 @@
     <!-- modal section -->
     <?= $this->renderSection('modal'); ?>
     <!-- script section -->
+    <?= $this->renderSection('main-js'); ?>
     <?= $this->renderSection('script'); ?>
 </body>
 
