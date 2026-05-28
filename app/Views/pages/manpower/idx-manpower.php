@@ -2,10 +2,11 @@
 
 <?= $this->section('content'); ?>
 <!-- body -->
-<div class="col-lg-6">
+<div class="col-lg-8">
     <table id="manPowerListTable" class="table table-striped table-hover">
         <thead>
             <tr>
+                <th>Number</th>
                 <th>Name</th>
                 <th>Employee ID</th>
                 <th>Gender</th>
@@ -48,25 +49,30 @@
             ajax: '/ajax-datatable/manpowerlist',
             columnDefs: [{
                     targets: 0,
-                    width: '20%'
+                    width: '10%'
                 },
                 {
                     targets: 1,
-                    width: '15%'
-                },
-                {
-                    targets: 2,
-                    width: '15%'
-                },
-                {
-                    targets: 3,
                     width: '25%'
                 },
                 {
+                    targets: 2,
+                    width: '25%'
+                },
+                {
+                    targets: 3,
+                    width: '15%'
+                },
+                {
                     targets: 4,
+                    width: '25%'
+                },
+                {
+                    targets: 5,
                     width: '25%',
                     orderable: false,
                     searchable: false,
+                    data: null,
                     render: function(data, type, row) {
                         if (type !== 'display') return '';
                         return `
@@ -80,7 +86,8 @@
                                 <i class="fas fa-trash"></i> Delete
                             </button>
                         `;
-                    }
+                    },
+
                 }
             ],
             dom: 'Bfrtip',
@@ -107,19 +114,20 @@
     });
 
     // Action functions
-    function viewManpower(id) {
-        alert('View manpower: ' + id);
+
+    function viewManpower(idx) {
+        alert('View manpower: ' + idx);
         // TODO: Implement view modal
     }
 
-    function editManpower(id) {
-        alert('Edit manpower: ' + id);
+    function editManpower(idx) {
+        alert('Edit manpower: ' + idx);
         // TODO: Implement edit modal
     }
 
-    function deleteManpower(id) {
+    function deleteManpower(idx) {
         if (confirm('Are you sure you want to delete this record?')) {
-            alert('Delete manpower: ' + id);
+            alert('Delete manpower: ' + idx);
             // TODO: Implement delete via AJAX
         }
     }
