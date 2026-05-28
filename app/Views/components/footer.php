@@ -15,6 +15,6 @@
             </div>
         </div>
         <hr class="bg-secondary">
-        <p class="mb-0">&copy; <?= date('Y') ?> Your Company. All rights reserved.</p>
+        <p class="mb-0">&copy; <?= date('Y') ?> FULLSTACK-KARBITAN</p>
     </div>
 </footer>
