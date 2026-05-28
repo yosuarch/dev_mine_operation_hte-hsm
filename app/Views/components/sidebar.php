@@ -6,5 +6,6 @@
         <a class="nav-link" href="#">Menu Item 3</a>
         <hr class="my-2">
         <a class="nav-link" href="#">Settings</a>
+        <a class="nav-link" href="<?= url_to('logout'); ?>">Logout</a>
     </nav>
 </aside>
