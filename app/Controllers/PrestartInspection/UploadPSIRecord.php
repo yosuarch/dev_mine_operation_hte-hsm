@@ -111,8 +111,10 @@ class UploadPSIRecord extends BaseController
             }
 
             unlink($filePath);
-
-            return "File imported! Inserted: $inserted, Skipped: $skipped, Errors: " . json_encode($errors);
+            session()->setFlashdata('inserted', $inserted);
+            session()->setFlashdata('skipped', $skipped);
+            session()->setFlashdata('errors', $errors);
+            return redirect()->back();
         }
         return "Error while uploading file";
     }

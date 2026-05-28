@@ -1,6 +1,29 @@
 <?= $this->extend('layouts/main_layout') ?>
 
 <?= $this->section('content'); ?>
+<?php if (session()->has('inserted')): ?>
+    <div class="alert alert-info alert-dismissible fade show" role="alert">
+        <strong>Import Selesai!</strong>
+        <ul>
+            <li>Data Berhasil Disimpan: <?= session('inserted') ?></li>
+            <li>Data Dilewati (Skipped): <?= session('skipped') ?></li>
+        </ul>
+
+        <?php if (!empty(session('errors'))): ?>
+            <hr>
+            <p class="mb-0">Detail Error:</p>
+            <div style="max-height: 200px; overflow-y: auto;">
+                <ul class="list-unstyled">
+                    <?php foreach (session('errors') as $error): ?>
+                        <li><small><?= esc($error) ?></small></li>
+                    <?php endforeach; ?>
+                </ul>
+            </div>
+        <?php endif; ?>
+
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+<?php endif; ?>
 <!-- the body on here -->
 <h2>Welcome aboard</h2>
 <p>Lorem ipsum, dolor sit amet consectetur adipisicing elit. Facilis quaerat hic in veritatis fugiat. Ab, libero? Amet numquam blanditiis temporibus aperiam. Maiores nesciunt quae perferendis.</p>
@@ -91,6 +114,7 @@
         </div>
     </div>
 </div>
+
 <?= $this->endSection(); ?>
 
 <?= $this->section('script'); ?>
