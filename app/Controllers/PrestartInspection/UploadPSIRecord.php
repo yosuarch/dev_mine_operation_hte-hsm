@@ -6,90 +6,77 @@ use App\Controllers\BaseController;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Shared\Date;
 use App\Models\PrestartInspection\ModelPsiRecord;
-use CodeIgniter\HTTP\ResponseInterface;
 
 class UploadPSIRecord extends BaseController
 {
     public function index()
     {
-        // prepare the file -> fetch it first
         $file = $this->request->getFile('psiRecording');
 
-        // iterating the file for upload
         if ($file->isValid() && !$file->hasMoved()) {
-            // prepare the temporary location
             $newName = $file->getRandomName();
             $file->move(WRITEPATH . 'uploads', $newName);
             $filePath = WRITEPATH . 'uploads' . DIRECTORY_SEPARATOR . $newName;
 
-            // load the spreadsheet libs for extracting data
-            $spreasheet = IOFactory::load($filePath);
-            $sheetData = $spreasheet->getActiveSheet()->toArray(null, true, true, true);
+            // Load spreadsheet
+            $spreadsheet = IOFactory::load($filePath);
+            $sheetData = $spreadsheet->getActiveSheet()->toArray(null, true, true, true);
 
-            // connect to database
+            // Connect database & prepare reference lookups
             $db = \Config\Database::connect();
-
             $equipList = array_change_key_case(array_column($db->table('equipment_register')->select("CONCAT(text_code, num_code) as code, idx")->get()->getResultArray(), 'idx', 'code'), CASE_LOWER);
             $shiftList = array_change_key_case(array_column($db->table('general_working_shift')->select("code, idx")->get()->getResultArray(), 'idx', 'code'), CASE_LOWER);
             $mpList    = array_change_key_case(array_column($db->table('mp_list')->select("name, idx")->get()->getResultArray(), 'idx', 'name'), CASE_LOWER);
             $partList  = array_change_key_case(array_column($db->table('psi_unique_observed_item')->select("checking_part_idn, idx")->get()->getResultArray(), 'idx', 'checking_part_idn'), CASE_LOWER);
 
-            // prepare to insert, extracting data for each row
             $model = new ModelPsiRecord();
-
             $inserted = 0;
             $skipped = 0;
             $errors = [];
+            $batchData = [];
 
+            // 1. Iterasi untuk validasi & mapping
             foreach ($sheetData as $index => $row) {
-                // extracting the data from excel file
-                if ($index == 1) continue;
+                if ($index == 1) continue; // Skip header
 
-                // date formatting
+                // Date Parsing
                 $rawDate = $row['C'];
                 $dateFormated = null;
-
                 if (is_numeric($rawDate)) {
-                    // Jika data adalah angka (format tanggal Excel standar)
                     $dateFormated = Date::excelToDateTimeObject($rawDate)->format('Y-m-d');
                 } else {
-                    // Jika data adalah teks, coba parse manual atau beri error
-                    // Contoh: menganggap format teks adalah 'Y-m-d' atau 'd/m/Y'
                     $timestamp = strtotime($rawDate);
                     if ($timestamp) {
                         $dateFormated = date('Y-m-d', $timestamp);
                     } else {
                         $errors[] = "Row $index: Format tanggal tidak valid ('{$rawDate}')";
-                        continue; // Lewati baris ini jika tanggal tidak bisa dibaca
+                        $skipped++;
+                        continue;
                     }
                 }
 
-                // error data array
+                // Lookup matching
                 $missing = [];
-
-                // transforming the equipment_id
-                // 1. search the result at memory
-                // validate the result per row
                 $equipIdx = $equipList[mb_strtolower($row['B'])] ?? null;
-                if (!$equipIdx) $missing[] = "Equipment Code ('{$row['B']}')";
+                if (!$equipIdx) $missing[] = "Equipment ('{$row['B']}')";
 
                 $shiftIdx = $shiftList[mb_strtolower($row['D'])] ?? null;
                 if (!$shiftIdx) $missing[] = "Shift ('{$row['D']}')";
 
-                $opIdx    = $mpList[mb_strtolower($row['E'])] ?? null;
-                if (!$opIdx)    $missing[] = "Operator ('{$row['E']}')";
+                $opIdx = $mpList[mb_strtolower($row['E'])] ?? null;
+                if (!$opIdx) $missing[] = "Operator ('{$row['E']}')";
 
-                $partIdx  = $partList[mb_strtolower($row['H'])] ?? null;
-                if (!$partIdx)  $missing[] = "Check Part ('{$row['H']}')";
+                $partIdx = $partList[mb_strtolower($row['H'])] ?? null;
+                if (!$partIdx) $missing[] = "Part ('{$row['H']}')";
 
-                // no regrence then record the data
                 if (!empty($missing)) {
                     $skipped++;
                     $errors[] = "Row $index: Tidak ditemukan di database -> " . implode(', ', $missing);
                     continue;
                 }
 
-                $data = [
+                // Add to batch array
+                $batchData[] = [
                     'equipment_id'    => (int)$equipIdx,
                     'date'            => $dateFormated,
                     'shift'           => (int)$shiftIdx,
@@ -100,11 +87,18 @@ class UploadPSIRecord extends BaseController
                     'checking_status' => (strcasecmp($row['I'], 'TRUE') === 0) ? 1 : 0,
                     'checking_note'   => !empty($row['J']) ? (string)$row['J'] : '',
                 ];
+            }
 
-                if ($model->insert($data)) {
-                    $inserted++;
+            // 2. Database Operation (Batch Insert in Transaction)
+            if (!empty($batchData)) {
+                $db->transStart();
+                $model->insertBatch($batchData);
+                $db->transComplete();
+
+                if ($db->transStatus() === false) {
+                    $errors[] = "Gagal menyimpan data ke database.";
                 } else {
-                    $errors[] = "Row $index: Database error: " . implode(', ', $model->errors());
+                    $inserted = count($batchData);
                 }
             }
 
@@ -114,6 +108,7 @@ class UploadPSIRecord extends BaseController
             session()->setFlashdata('errors', $errors);
             return redirect()->back();
         }
+
         return "Error while uploading file";
     }
 }
