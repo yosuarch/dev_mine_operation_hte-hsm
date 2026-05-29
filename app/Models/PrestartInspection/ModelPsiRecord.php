@@ -95,7 +95,10 @@ class ModelPsiRecord extends Model
             ->join('general_working_shift', 'psi_record.shift = general_working_shift.idx', 'left')
             ->groupBy([
                 'psi_record.DATE',
-                'psi_record.shift'
-            ]);
+                'psi_record.shift',
+                'psi_record.operator_name',
+                'psi_record.equipment_id'
+            ])
+            ->orderBy('psi_record.DATE', 'DESC');
     }
 }

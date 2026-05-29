@@ -29,10 +29,10 @@ class UploadPSIRecord extends BaseController
             // connect to database
             $db = \Config\Database::connect();
 
-            $equipList = array_column($db->table('equipment_register')->select("CONCAT(text_code, num_code) as code, idx")->get()->getResultArray(), 'idx', 'code');
-            $shiftList = array_column($db->table('general_working_shift')->select("code, idx")->get()->getResultArray(), 'idx', 'code');
-            $mpList    = array_column($db->table('mp_list')->select("name, idx")->get()->getResultArray(), 'idx', 'name');
-            $partList  = array_column($db->table('psi_unique_observed_item')->select("checking_part_idn, idx")->get()->getResultArray(), 'idx', 'checking_part_idn');
+            $equipList = array_change_key_case(array_column($db->table('equipment_register')->select("CONCAT(text_code, num_code) as code, idx")->get()->getResultArray(), 'idx', 'code'), CASE_LOWER);
+            $shiftList = array_change_key_case(array_column($db->table('general_working_shift')->select("code, idx")->get()->getResultArray(), 'idx', 'code'), CASE_LOWER);
+            $mpList    = array_change_key_case(array_column($db->table('mp_list')->select("name, idx")->get()->getResultArray(), 'idx', 'name'), CASE_LOWER);
+            $partList  = array_change_key_case(array_column($db->table('psi_unique_observed_item')->select("checking_part_idn, idx")->get()->getResultArray(), 'idx', 'checking_part_idn'), CASE_LOWER);
 
             // prepare to insert, extracting data for each row
             $model = new ModelPsiRecord();
@@ -45,62 +45,66 @@ class UploadPSIRecord extends BaseController
                 // extracting the data from excel file
                 if ($index == 1) continue;
 
-                // transform the date
-                $excelDate = $row['C'];
-                $dateFormated = Date::excelToDateTimeObject($excelDate)->format('Y-m-d');
+                // date formatting
+                $rawDate = $row['C'];
+                $dateFormated = null;
+
+                if (is_numeric($rawDate)) {
+                    // Jika data adalah angka (format tanggal Excel standar)
+                    $dateFormated = Date::excelToDateTimeObject($rawDate)->format('Y-m-d');
+                } else {
+                    // Jika data adalah teks, coba parse manual atau beri error
+                    // Contoh: menganggap format teks adalah 'Y-m-d' atau 'd/m/Y'
+                    $timestamp = strtotime($rawDate);
+                    if ($timestamp) {
+                        $dateFormated = date('Y-m-d', $timestamp);
+                    } else {
+                        $errors[] = "Row $index: Format tanggal tidak valid ('{$rawDate}')";
+                        continue; // Lewati baris ini jika tanggal tidak bisa dibaca
+                    }
+                }
+
+                // error data array
+                $missing = [];
 
                 // transforming the equipment_id
                 // 1. search the result at memory
-                $equipIdx = $equipList[$row['B']] ?? null;
-                $shiftIdx = $shiftList[$row['D']] ?? null;
-                $opIdx    = $mpList[$row['E']] ?? null;
-                $partIdx  = $partList[$row['H']] ?? null;
+                // validate the result per row
+                $equipIdx = $equipList[mb_strtolower($row['B'])] ?? null;
+                if (!$equipIdx) $missing[] = "Equipment Code ('{$row['B']}')";
 
-                // 2. get iterate for each row
-                // 2.1 equipment_ID
-                // $rawECode = $equipmentRegister->select('idx')
-                //     ->where("CONCAT(text_code, num_code) =", $rawECode)
-                //     ->get()
-                //     ->getRow();
+                $shiftIdx = $shiftList[mb_strtolower($row['D'])] ?? null;
+                if (!$shiftIdx) $missing[] = "Shift ('{$row['D']}')";
 
-                // // 2.2 shift
-                // $rawShift = $workingShift->select('idx')
-                //     ->where("code =", $rawShift)
-                //     ->get()
-                //     ->getRow();
+                $opIdx    = $mpList[mb_strtolower($row['E'])] ?? null;
+                if (!$opIdx)    $missing[] = "Operator ('{$row['E']}')";
 
-                // // 2.3 operator name
-                // $rawOpName = $manPowerList->select('idx')
-                //     ->where("name =", $rawOpName)
-                //     ->get()
-                //     ->getRow();
+                $partIdx  = $partList[mb_strtolower($row['H'])] ?? null;
+                if (!$partIdx)  $missing[] = "Check Part ('{$row['H']}')";
 
-                // // 2.3 checking part
-                // $rawCheckPart = $checkPart->select('idx')
-                //     ->where("checking_part_idn =", $rawCheckPart)
-                //     ->get()
-                //     ->getRow();
-
-                if ($equipIdx && $shiftIdx && $opIdx && $partIdx) {
-                    $data = [
-                        'equipment_id'    => (int)$equipIdx,
-                        'date'            => Date::excelToDateTimeObject($row['C'])->format('Y-m-d'),
-                        'shift'           => (int)$shiftIdx,
-                        'operator_name'   => (int)$opIdx,
-                        'hourmeter_start' => is_numeric($row['F']) ? (int)$row['F'] : 0,
-                        'hourmeter_end'   => is_numeric($row['G']) ? (int)$row['G'] : 0,
-                        'checking_part'   => (int)$partIdx,
-                        'checking_status' => (strcasecmp($row['I'], 'TRUE') === 0) ? 1 : 0,
-                        'checking_note'   => (string)$row['J'],
-                    ];
-                    if ($model->insert($data)) {
-                        $inserted++;
-                    } else {
-                        $errors[] = "Row $index: Insert failed";
-                    }
-                } else {
+                // no regrence then record the data
+                if (!empty($missing)) {
                     $skipped++;
-                    $errors[] = "Row $index: Lookup failed (Check data integrity)";
+                    $errors[] = "Row $index: Tidak ditemukan di database -> " . implode(', ', $missing);
+                    continue;
+                }
+
+                $data = [
+                    'equipment_id'    => (int)$equipIdx,
+                    'date'            => $dateFormated,
+                    'shift'           => (int)$shiftIdx,
+                    'operator_name'   => (int)$opIdx,
+                    'hourmeter_start' => is_numeric($row['F']) ? (int)$row['F'] : 0,
+                    'hourmeter_end'   => is_numeric($row['G']) ? (int)$row['G'] : 0,
+                    'checking_part'   => (int)$partIdx,
+                    'checking_status' => (strcasecmp($row['I'], 'TRUE') === 0) ? 1 : 0,
+                    'checking_note'   => !empty($row['J']) ? (string)$row['J'] : '',
+                ];
+
+                if ($model->insert($data)) {
+                    $inserted++;
+                } else {
+                    $errors[] = "Row $index: Database error: " . implode(', ', $model->errors());
                 }
             }
 
