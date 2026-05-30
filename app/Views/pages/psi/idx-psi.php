@@ -36,7 +36,7 @@
 <?php endif; ?>
 <!-- the body on here -->
 <h2>Welcome aboard</h2>
-<p>Lorem ipsum, dolor sit amet consectetur adipisicing elit. Facilis quaerat hic in veritatis fugiat. Ab, libero? Amet numquam blanditiis temporibus aperiam. Maiores nesciunt quae perferendis.</p>
+<p><small>Use this module to import Pre-Start Inspection (P2H) records. Upon successful submission, automated notifications will be dispatched to the designated departments to ensure timely follow-up of any reported discrepancies.</small></p>
 <br>
 <div class="col-lg-12 p-0 m-0">
     <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#uploadPSIRecord">
