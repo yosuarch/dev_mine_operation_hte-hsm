@@ -51,7 +51,7 @@
             <canvas id="dangerFreqChart"></canvas>
         </div>
     </div>
-    <h3>raw recorded data</h3>
+    <h3>Pre-Start Inspection (P2H)</h3>
     <div style="overflow-x: auto;">
         <!-- recorded table -->
         <table id="prestartInspectionTable" class="table table-striped">
