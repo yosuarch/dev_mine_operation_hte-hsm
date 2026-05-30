@@ -75,7 +75,8 @@
 
 <!-- modal -->
 <?= $this->section('modal'); ?>
-<?= $this->include('pages/psi/modal-psi'); ?>
+<?= $this->include('pages/psi/modal-report'); ?>
+<?= $this->include('pages/psi/modal-upload'); ?>
 <?= $this->endSection(); ?>
 
 <?= $this->section('main-js'); ?>
