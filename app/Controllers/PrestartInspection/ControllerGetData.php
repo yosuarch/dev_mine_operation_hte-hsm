@@ -35,4 +35,13 @@ class ControllerGetData extends BaseController
 
         return $this->response->setJSON($query);
     }
+
+    public function getSumIssue()
+    {
+        // 
+        $data = new ModelPsiRecord();
+        $query = $data->getSumIssue()->get()->getResultArray();
+
+        return $this->response->setJSON($query);
+    }
 }

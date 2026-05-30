@@ -108,19 +108,34 @@ class ModelPsiRecord extends Model
         return $this->db->table($this->table)
             ->select([
                 'psi_record.`date` AS `date`',
-                // 'equipment_models_property.`type` AS `type`',
                 'ohse_danger_code.`code` AS `danger_code`',
                 'COUNT(ohse_danger_code.`code`) AS `frequency`',
             ])
             ->join('equipment_register', 'psi_record.equipment_id = equipment_register.idx', 'left')
-            // ->join('equipment_models_property', 'equipment_register.model = equipment_models_property.idx', 'left')
             ->join('psi_unique_observed_item', 'psi_record.checking_part = psi_unique_observed_item.idx', 'left')
             ->join('ohse_danger_code', 'psi_unique_observed_item.danger_tag = ohse_danger_code.idx', 'left')
             ->groupBy([
                 'psi_record.`date`',
-                // 'equipment_models_property.`type`',
                 'ohse_danger_code.`code`',
             ])
             ->orderBy('ohse_danger_code.idx', 'asc');
+    }
+
+    public function getSumIssue()
+    {
+        return $this->db->table('psi_record')
+            ->select([
+                "CONCAT(equipment_models_property.type, ' ', ROUND(equipment_register.class, 0), equipment_class_uom.code) AS class",
+                "SUM(CASE WHEN psi_spoting_position.code = 'inside' THEN 1 ELSE NULL END) AS inside",
+                "SUM(CASE WHEN psi_spoting_position.code = 'outside' THEN 1 ELSE NULL END) AS outside",
+                "SUM(CASE WHEN psi_spoting_position.code = 'safety_device' THEN 1 ELSE NULL END) AS safety_device"
+            ])
+            ->join('psi_unique_observed_item', 'psi_record.checking_part = psi_unique_observed_item.idx', 'left')
+            ->join('equipment_register', 'psi_record.equipment_id = equipment_register.idx', 'left')
+            ->join('equipment_models_property', 'equipment_register.model = equipment_models_property.idx', 'left')
+            ->join('equipment_class_uom', 'equipment_register.class_uom = equipment_class_uom.idx', 'left')
+            ->join('psi_spoting_position', 'psi_unique_observed_item.spot = psi_spoting_position.idx', 'left')
+            ->groupBy('equipment_models_property.type')
+            ->groupBy('CONCAT(equipment_register.class, equipment_class_uom.code)');
     }
 }
