@@ -7,16 +7,18 @@
 <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
 <!-- date range picker -->
 <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
+<!-- chart.js -->
+
 <?= $this->endSection(); ?>
 
 
 <?= $this->section('content'); ?>
 <?php if (session()->has('inserted')): ?>
     <div class="alert alert-info alert-dismissible fade show" role="alert">
-        <strong>Import Selesai!</strong>
+        <strong>Import is Done!</strong>
         <ul>
-            <li>Data Berhasil Disimpan: <?= session('inserted') ?></li>
-            <li>Data Dilewati (Skipped): <?= session('skipped') ?></li>
+            <li>Successfull Insert: <?= session('inserted') ?></li>
+            <li>Skipped data: <?= session('skipped') ?></li>
         </ul>
 
         <?php if (!empty(session('errors'))): ?>
@@ -37,7 +39,6 @@
 <!-- the body on here -->
 <h2>Welcome aboard</h2>
 <p><small>Use this module to import Pre-Start Inspection (P2H) records. Upon successful submission, automated notifications will be dispatched to the designated departments to ensure timely follow-up of any reported discrepancies.</small></p>
-<br>
 <div class="col-lg-12 p-0 m-0">
     <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#uploadPSIRecord">
         Import Record
@@ -45,6 +46,11 @@
     <button type="button" id="generateReport" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#generateReportModal">
         Generate Report
     </button>
+    <div class="col-md-6">
+        <div style="width: 80%; margin: 20px auto;">
+            <canvas id="dangerFreqChart"></canvas>
+        </div>
+    </div>
     <h3>raw recorded data</h3>
     <div style="overflow-x: auto;">
         <!-- recorded table -->
@@ -88,6 +94,8 @@
 <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
 <!-- DataTables Bootstrap5 JS -->
 <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+<!-- chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <?= $this->endSection(); ?>
 
 <?= $this->section('script'); ?>
@@ -212,6 +220,62 @@
             });
         });
 
+        $.getJSON('<?= base_url("/ajax-chart/freq-danger-code") ?>', function(response) {
+            // 1. Ambil list tanggal unik (Sumbu X)
+            const dates = [...new Set(response.map(item => item.date))];
+
+            // 2. Ambil list kode bahaya unik (Untuk membuat masing-masing bar)
+            const dangerCodes = [...new Set(response.map(item => item.danger_code))];
+
+            // 3. Buat dataset secara dinamis
+            const datasets = dangerCodes.map(code => {
+                return {
+                    label: 'Danger Code: ' + code,
+                    backgroundColor: getDangerColor(code),
+                    // Kita petakan setiap tanggal ke frekuensi yang sesuai
+                    data: dates.map(date => {
+                        // Cari data untuk tanggal ini dan kode ini
+                        const record = response.find(item => item.date === date && item.danger_code === code);
+                        return record ? parseInt(record.frequency) : 0;
+                    })
+                };
+            });
+
+            // 4. Render Chart
+            const ctx = document.getElementById('dangerFreqChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: dates,
+                    datasets: datasets // Sekarang datasets berisi array dari semua kode yang ada
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        x: {
+                            stacked: true
+                        },
+                        y: {
+                            stacked: true,
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+
+            function getDangerColor(code) {
+                const colors = {
+                    'AA': '#8B0000', // Dark Red - Sangat Berbahaya
+                    'A': '#FF0000', // Red      - Berbahaya
+                    'B': '#FF6347', // Tomato   - Sedang
+                    'C': '#FFA07A' // Light Salmon - Sangat Ringan
+                };
+                return colors[code] || '#cccccc';
+            }
+        });
+
+
+        // datepicker
         $('#datePicker').daterangepicker({
             opens: 'right'
         });

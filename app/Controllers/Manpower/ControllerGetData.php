@@ -9,6 +9,7 @@ use CodeIgniter\HTTP\ResponseInterface;
 
 class ControllerGetData extends BaseController
 {
+
     public function fetchManPowerList()
     {
         //

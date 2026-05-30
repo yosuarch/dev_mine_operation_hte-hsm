@@ -70,7 +70,7 @@ class ModelPsiRecord extends Model
     // fetch the record
     public function getPSIRecordDetails()
     {
-        return $this->db->table('psi_record')
+        return $this->db->table($this->table)
             ->select([
                 'psi_record.DATE AS date',
                 'mp_list.`name` AS operator_name',
@@ -100,5 +100,27 @@ class ModelPsiRecord extends Model
                 'psi_record.equipment_id'
             ])
             ->orderBy('psi_record.DATE', 'DESC');
+    }
+
+    public function getDangerStatFreq()
+    {
+        // 
+        return $this->db->table($this->table)
+            ->select([
+                'psi_record.`date` AS `date`',
+                // 'equipment_models_property.`type` AS `type`',
+                'ohse_danger_code.`code` AS `danger_code`',
+                'COUNT(ohse_danger_code.`code`) AS `frequency`',
+            ])
+            ->join('equipment_register', 'psi_record.equipment_id = equipment_register.idx', 'left')
+            // ->join('equipment_models_property', 'equipment_register.model = equipment_models_property.idx', 'left')
+            ->join('psi_unique_observed_item', 'psi_record.checking_part = psi_unique_observed_item.idx', 'left')
+            ->join('ohse_danger_code', 'psi_unique_observed_item.danger_tag = ohse_danger_code.idx', 'left')
+            ->groupBy([
+                'psi_record.`date`',
+                // 'equipment_models_property.`type`',
+                'ohse_danger_code.`code`',
+            ])
+            ->orderBy('ohse_danger_code.idx', 'asc');
     }
 }

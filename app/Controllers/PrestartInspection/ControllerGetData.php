@@ -26,4 +26,13 @@ class ControllerGetData extends BaseController
 
         return DataTable::of($query)->toJson();
     }
+
+    public function fetchGetDangerCodeFreq()
+    {
+        // 
+        $data = new ModelPsiRecord();
+        $query = $data->getDangerStatFreq()->get()->getResultArray();
+
+        return $this->response->setJSON($query);
+    }
 }

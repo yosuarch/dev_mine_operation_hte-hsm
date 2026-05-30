@@ -16,4 +16,8 @@ $routes->post('/upload-psi-record', 'PrestartInspection\UploadPSIRecord::index')
 $routes->get('/ajax-datatable/prestartrecord', 'PrestartInspection\ControllerGetData::fetchPSIDetail');
 $routes->get('/ajax-datatable/manpowerlist', 'Manpower\ControllerGetData::fetchManPowerList');
 
+// ajax routes - charting
+$routes->get('/ajax-chart/freq-danger-code', 'PrestartInspection\ControllerGetData::fetchGetDangerCodeFreq');
+
+
 service('auth')->routes($routes);
