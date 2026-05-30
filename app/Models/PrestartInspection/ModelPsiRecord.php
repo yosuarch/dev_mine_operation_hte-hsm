@@ -73,14 +73,14 @@ class ModelPsiRecord extends Model
         return $this->db->table($this->table)
             ->select([
                 'psi_record.DATE AS date',
-                'mp_list.`name` AS operator_name',
-                'mp_list.employee_id AS employee_id',
-                'general_gender.gender AS gender',
+                // 'mp_list.`name` AS operator_name',
+                // 'mp_list.employee_id AS employee_id',
+                // 'general_gender.gender AS gender',
                 'CONCAT(equipment_register.text_code, equipment_register.num_code) AS equipment_id',
                 'equipment_models_property.model AS model',
                 'equipment_models_property.type AS type',
-                'psi_record.hourmeter_start AS hm_start',
-                'psi_record.hourmeter_end AS hm_end',
+                // 'psi_record.hourmeter_start AS hm_start',
+                // 'psi_record.hourmeter_end AS hm_end',
                 "GROUP_CONCAT(psi_unique_observed_item.checking_part) AS check_item",
                 'ohse_danger_code.`code` AS danger_code',
                 "GROUP_CONCAT(psi_record.checking_note) AS note"
@@ -96,7 +96,7 @@ class ModelPsiRecord extends Model
             ->groupBy([
                 'psi_record.DATE',
                 'psi_record.shift',
-                'psi_record.operator_name',
+                // 'psi_record.operator_name',
                 'psi_record.equipment_id'
             ])
             ->orderBy('psi_record.DATE', 'DESC');

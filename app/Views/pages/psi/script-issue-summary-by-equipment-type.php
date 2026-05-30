@@ -11,7 +11,7 @@
                 // Loop through the data and build the rows
                 $.each(response, function(index, item) {
                     let row = `<tr>
-                    <td>${item.class}</td>
+                    <td>${item.class}</td>script-issue-summary-by-equipment-type
                     <td>${item.inside ?? 0}</td>
                     <td>${item.outside ?? 0}</td>
                     <td>${item.safety_device ?? 0}</td>

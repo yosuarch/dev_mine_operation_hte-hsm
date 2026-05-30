@@ -7,64 +7,53 @@
             columnDefs: [{ //
                     // Date
                     targets: 0,
-                    width: '100px'
-                },
-                { // Name
-                    targets: 1,
-                    width: '150px'
-                },
-                { // Employee ID
-                    targets: 2,
-                    width: '100px'
-                },
-                { // Gender
-                    targets: 3,
-                    width: '80px'
+                    width: '10%'
                 },
                 { // Equipment ID
-                    targets: 4,
-                    width: '120px'
+                    targets: 1,
+                    width: '10%'
                 },
                 { // Type
-                    targets: 5,
-                    width: '200px',
+                    targets: 2,
+                    width: '10%',
                     render: function(data) {
                         // Replace underscores with spaces, remove other special characters, and convert to uppercase
                         return data.replace(/_/g, ' ').replace(/[^a-zA-Z0-9 ]/g, '').toUpperCase();
                     }
                 },
                 { // Model
-                    targets: 6,
-                    width: '100px'
-                },
-                { // HM-Start
-                    targets: 7,
-                    width: '100px'
-                },
-                { // HM-End
-                    targets: 8,
-                    width: '100px'
+                    targets: 3,
+                    width: '10%'
                 },
                 { // Check Item
-                    targets: 9,
-                    width: '120px',
+                    targets: 4,
+                    width: '25%',
                     render: function(data) {
-                        // Transform the content to UPPER CASE
-                        return data.replace(/_/g, ' ').toUpperCase();
+                        if (!data) return '';
+
+                        return data.split(',')
+                            .filter(item => item.trim() !== '') // Removes empty entries
+                            // Use (index + 1) to start numbering from 1
+                            .map((item, index) => (index + 1) + '. ' + item.replace(/_/g, ' ').trim().toUpperCase())
+                            .join('<br>');
                     }
                 },
                 { // Danger Code
-                    targets: 10,
-                    width: '70px'
+                    targets: 5,
+                    width: '10%'
                 },
                 { // Note
-                    targets: 11,
-                    width: '200px',
+                    targets: 6,
+                    width: '25%',
                     render: function(data) {
-                        // Transform the content to UPPER CASE
-                        return data.replace(/_/g, ' ').toUpperCase();
+                        if (!data) return '';
+
+                        return data.split(',')
+                            .filter(item => item.trim() !== '')
+                            .map((item, index) => (index + 1) + '. ' + item.replace(/_/g, ' ').trim().toUpperCase())
+                            .join('<br>');
                     }
-                },
+                }
             ]
         });
     })
