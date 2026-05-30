@@ -58,20 +58,20 @@ class UploadPSIRecord extends BaseController
                 // Lookup matching
                 $missing = [];
                 $equipIdx = $equipList[mb_strtolower($row['B'])] ?? null;
-                if (!$equipIdx) $missing[] = "Equipment ('{$row['B']}')";
+                if (!$equipIdx) $missing[] = "Equipment ID ('{$row['B']}')";
 
                 $shiftIdx = $shiftList[mb_strtolower($row['D'])] ?? null;
                 if (!$shiftIdx) $missing[] = "Shift ('{$row['D']}')";
 
                 $opIdx = $mpList[mb_strtolower($row['E'])] ?? null;
-                if (!$opIdx) $missing[] = "Operator ('{$row['E']}')";
+                if (!$opIdx) $missing[] = "Operator Name ('{$row['E']}')";
 
                 $partIdx = $partList[mb_strtolower($row['H'])] ?? null;
-                if (!$partIdx) $missing[] = "Part ('{$row['H']}')";
+                if (!$partIdx) $missing[] = "Check Part ('{$row['H']}')";
 
                 if (!empty($missing)) {
                     $skipped++;
-                    $errors[] = "Row $index: Tidak ditemukan di database -> " . implode(', ', $missing);
+                    $errors[] = "Row $index: Data not found at Database -> " . implode(', ', $missing);
                     continue;
                 }
 
@@ -96,7 +96,7 @@ class UploadPSIRecord extends BaseController
                 $db->transComplete();
 
                 if ($db->transStatus() === false) {
-                    $errors[] = "Gagal menyimpan data ke database.";
+                    $errors[] = "Failed save to database.";
                 } else {
                     $inserted = count($batchData);
                 }
