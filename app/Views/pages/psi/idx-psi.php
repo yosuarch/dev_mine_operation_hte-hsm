@@ -39,7 +39,7 @@
 <p>Lorem ipsum, dolor sit amet consectetur adipisicing elit. Facilis quaerat hic in veritatis fugiat. Ab, libero? Amet numquam blanditiis temporibus aperiam. Maiores nesciunt quae perferendis.</p>
 <br>
 <div class="col-lg-12 p-0 m-0">
-    <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#staticBackdrop">
+    <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#uploadPSIRecord">
         Import Record
     </button>
     <button type="button" id="generateReport" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#generateReportModal">
