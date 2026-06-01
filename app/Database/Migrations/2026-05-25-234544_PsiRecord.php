@@ -91,7 +91,7 @@ class PsiRecord extends Migration
 
         // table attribute
         $this->forge->addPrimaryKey('idx');
-        $this->forge->addUniqueKey(['equipment_id', 'shift', 'operator_name', 'hourmeter_start', 'hourmeter_end', 'checking_part'], "uq_" . $this->table . '_idx');
+        $this->forge->addUniqueKey(['equipment_id', 'date', 'shift', 'operator_name', 'hourmeter_start', 'hourmeter_end', 'checking_part'], "uq_" . $this->table . '_idx');
 
         // create the table
         $this->forge->createTable($this->table);
