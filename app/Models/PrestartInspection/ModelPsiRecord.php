@@ -135,6 +135,7 @@ class ModelPsiRecord extends Model
             ->join('equipment_models_property', 'equipment_register.model = equipment_models_property.idx', 'left')
             ->join('equipment_class_uom', 'equipment_register.class_uom = equipment_class_uom.idx', 'left')
             ->join('psi_spoting_position', 'psi_unique_observed_item.spot = psi_spoting_position.idx', 'left')
+            ->where('psi_record.`date` = (SELECT MAX(date) FROM psi_record)', null, false)
             ->groupBy('equipment_models_property.type')
             ->groupBy('CONCAT(equipment_register.class, equipment_class_uom.code)');
     }
