@@ -36,7 +36,7 @@
         </div>
     </div>
     <h3>Daily Pre-Start Inspection (P2H) Record</h3>
-    <div style="overflow-x: auto;">
+    <div class="table-responsive">
         <!-- recorded table -->
         <?= $this->include('pages/psi/tabel-prestart-record'); ?>
     </div>

@@ -19,12 +19,23 @@ class ControllerGetData extends BaseController
     //     return DataTable::of($data)->toJson();
     // }
 
+    // public function fetchPSIDetail()
+    // {
+    //     $data = new ModelPsiRecord();
+    //     $query = $data->getPSIRecordDetails();
+
+    //     return DataTable::of($query)->toJson();
+    // }
+
     public function fetchPSIDetail()
     {
-        $data = new ModelPsiRecord();
-        $query = $data->getPSIRecordDetails();
+        $db = \Config\Database::connect();
 
-        return DataTable::of($query)->toJson();
+        // We select specifically to ensure the key names are clean and lowercase
+        $builder = $db->table('view_psi_details')
+            ->select('date, equipment_id, type, model, check_item, danger_code, note');
+
+        return DataTable::of($builder)->toJson();
     }
 
     public function fetchGetDangerCodeFreq()
