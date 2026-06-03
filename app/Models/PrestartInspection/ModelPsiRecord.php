@@ -75,7 +75,8 @@ class ModelPsiRecord extends Model
                 'ohse_danger_code.`code`',
             ])
             ->orderBy('psi_record.`date`', 'ASC')
-            ->orderBy('ohse_danger_code.idx', 'ASC');
+            ->orderBy('ohse_danger_code.idx', 'ASC')
+            ->limit(7);
     }
 
     public function getSumIssue()
