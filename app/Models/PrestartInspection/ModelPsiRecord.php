@@ -67,7 +67,7 @@ class ModelPsiRecord extends Model
                 'ohse_danger_code.`code` AS `danger_code`',
                 'COUNT(ohse_danger_code.`code`) AS `frequency`',
             ])
-            ->where('psi_record.`date` >=', 'DATE_SUB(NOW(), INTERVAL 7 DAY)', false)
+            ->where('psi_record.`date` >=', 'DATE_SUB(NOW(), INTERVAL 10 DAY)', false)
             ->join('equipment_register', 'psi_record.equipment_id = equipment_register.idx', 'left')
             ->join('psi_unique_observed_item', 'psi_record.checking_part = psi_unique_observed_item.idx', 'left')
             ->join('ohse_danger_code', 'psi_unique_observed_item.danger_tag = ohse_danger_code.idx', 'left')
