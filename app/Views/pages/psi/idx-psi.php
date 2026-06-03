@@ -21,7 +21,7 @@
     <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#uploadPSIRecord">
         Import Record
     </button>
-    <button type="button" id="generateReport" class="btn btn-warning disabled" data-bs-toggle="modal" data-bs-target="#generateReportModal">
+    <button type="button" id="generateReport" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#generateReportModal">
         Generate Report
     </button>
     <div class="row">

@@ -21,4 +21,11 @@ $routes->get('/ajax-datatable/manpowerlist', 'Manpower\ControllerGetData::fetchM
 $routes->get('/ajax-chart/freq-danger-code', 'PrestartInspection\ControllerGetData::fetchGetDangerCodeFreq');
 
 
+// testing mail
+$routes->get('/test-mail', 'TestMail::sendTestEmail');
+
+
+// mailing
+$routes->get('/ajax-daily-unit-type', 'PrestartInspection\ControllerEmailReport::getData1');
+
 service('auth')->routes($routes);
