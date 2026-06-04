@@ -198,8 +198,8 @@
         </div>
     </div>
     <div class="mainContent">
-        <?php if (!empty($groupedData)): ?>
-            <?php foreach ($groupedData as $typeName => $sessions): ?>
+        <?php if (!empty($combined_data)): ?>
+            <?php foreach ($combined_data as $typeName => $sessions): ?>
                 <div class="equipmentSegment">
                     <h2 style="color: #2d3628; border-bottom: 2px solid #627254; padding-bottom: 5px;">
                         <?= esc(ucwords(str_replace('_', ' ', $typeName))) ?>
@@ -229,16 +229,21 @@
                                 </thead>
                                 <tbody>
                                     <?php
-                                    $checks = explode(';', $item['check_item']);
-                                    $notes = explode(';', $item['note']);
-                                    $tags = explode(';', $item['danger_code']);
+                                    // Explode the combined string
+                                    $rows = explode(';;', $item['psi_details']);
 
-                                    foreach ($checks as $index => $checkName): ?>
+                                    foreach ($rows as $rowData):
+                                        // Split into parts: [0] => Check Item, [1] => Tag, [2] => Note
+                                        $parts = explode('|', $rowData);
+                                        $checkName = $parts[0] ?? '-';
+                                        $tagName   = $parts[1] ?? '-';
+                                        $note      = $parts[2] ?? '-';
+                                    ?>
                                         <tr>
                                             <td style="font-weight: bold;"><?= esc($checkName) ?></td>
-                                            <td><?= esc($tags[$index] ?? '-') ?></td>
+                                            <td><?= esc($tagName) ?></td>
                                             <td><span class="status-badge">Open</span></td>
-                                            <td><?= esc($notes[$index] ?? '-') ?></td>
+                                            <td><?= esc($note) ?></td>
                                         </tr>
                                     <?php endforeach; ?>
                                 </tbody>

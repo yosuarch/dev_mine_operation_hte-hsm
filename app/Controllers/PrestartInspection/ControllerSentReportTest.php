@@ -16,12 +16,16 @@ class ControllerSentReportTest extends BaseController
 
         // 3. Database
         $db = Database::connect();
-        $records = $db->table('view_psi_daily_recording')->get()->getResultArray();
+        $records = $db->table('view_psi_daily_recording')
+            ->orderBy('type', 'ASC')
+            ->orderBy('equipment_id', 'ASC')
+            ->get()
+            ->getResultArray();
 
         // 4. Data Aggregation
-        $groupedData = [];
+        $combined_data = [];
         foreach ($records as $row) {
-            $groupedData[$row['type']][] = $row;
+            $combined_data[$row['type']][] = $row;
         }
 
         // 5. Initialize DOMPDF with Options Object
@@ -36,7 +40,7 @@ class ControllerSentReportTest extends BaseController
         // 6. Pass data correctly to View
         // Ensure keys match the variables you use in the View
         $data = [
-            'groupedData' => $groupedData,
+            'combined_data' => $combined_data,
         ];
 
         $html = view('pages/psi/pdf/pdf-psi-report', $data);
@@ -45,7 +49,7 @@ class ControllerSentReportTest extends BaseController
         $dompdf->loadHtml($html);
         $dompdf->setPaper('A4', 'portrait');
         $dompdf->render();
-        $dompdf->stream("P2H_Report_" . date('Y-m-d') . ".pdf", ['Attachment' => 1]);
+        $dompdf->stream("P2H_Report_" . date('Y-m-d') . ".pdf", ['Attachment' => 0]);
         exit(); // Crucial to prevent output pollution
     }
 }
