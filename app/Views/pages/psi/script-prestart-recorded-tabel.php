@@ -43,10 +43,10 @@
                     render: function(data, type, row) {
                         // 'data' is the value of index 4 (check_item)
                         // 'row' is the entire array for this row
-                        const items = data ? data.split(',').filter(i => i.trim() !== '') : [];
+                        const items = data ? data.split(';').filter(i => i.trim() !== '') : [];
 
                         // Change: Access the note column using its index (6)
-                        const notes = row[6] ? row[6].split(',').filter(n => n.trim() !== '') : [];
+                        const notes = row[6] ? row[6].split(';').filter(n => n.trim() !== '') : [];
 
                         if (items.length === 0) return '';
 

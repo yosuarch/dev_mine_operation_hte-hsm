@@ -4,15 +4,16 @@ namespace App\Database\Migrations;
 
 use CodeIgniter\Database\Migration;
 
-class EquipmentModelsProperty extends Migration
+class GeneralJobStatus extends Migration
 {
+
     // common info
-    protected $table = 'equipment_models_property';
+    protected $table = 'general_job_status';
     protected $DBGroup = 'default';
 
     public function up()
     {
-        // field's
+        // create table
         $this->forge->addField([
             'idx' => [
                 'type' => 'int',
@@ -20,26 +21,17 @@ class EquipmentModelsProperty extends Migration
                 'unsigned' => true,
                 'auto_increment' => true,
             ],
-            'model' => [
-                'type' => 'varchar',
-                'constraint' => 32,
-                'null' => false,
-            ],
-            'type' => [
+            'code' => [
                 'type' => 'varchar',
                 'constraint' => 64,
-                'null' => false,
-            ],
-            'brand' => [
-                'type' => 'varchar',
-                'constraint' => 32,
-                'null' => false,
-            ],
+                'comment' => 'first stage is use OPEN, CLOSE and CONTINUE'
+            ]
         ]);
+
 
         // table attribute
         $this->forge->addPrimaryKey('idx');
-        $this->forge->addUniqueKey(['model', 'type', 'brand'], "uq_" . $this->table . '_idx');
+        $this->forge->addUniqueKey(['idx'], "uq_" . $this->table . '_idx');
 
         // create the table
         $this->forge->createTable($this->table);

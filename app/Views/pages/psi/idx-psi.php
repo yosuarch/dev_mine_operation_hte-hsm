@@ -21,9 +21,12 @@
     <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#uploadPSIRecord">
         Import Record
     </button>
-    <button type="button" id="generateReport" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#generateReportModal">
+    <a href="<?= base_url('/psi-generate-pdf') ?>" class="btn btn-warning">
         Generate Report
-    </button>
+    </a>
+    <!-- <button type="button" id="generateReport" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#generateReportModal">
+        Generate Report
+    </button> -->
     <div class="row">
         <div class="col-lg-6">
             <div style="width: 80%; margin: 20px auto;">

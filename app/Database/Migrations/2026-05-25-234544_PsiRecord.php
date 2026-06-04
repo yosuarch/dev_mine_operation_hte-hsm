@@ -65,6 +65,13 @@ class PsiRecord extends Migration
                 'type' => 'text',
                 'default' => 'no issue',
             ],
+            'status' => [
+                'type' => 'int',
+                'constraint' => 2,
+                'null' => true,
+                'default' => 1,
+                'comment' => 'close or open issue',
+            ],
             'inserted_by' => [
                 'type' => 'int',
                 'constraint' => 3,

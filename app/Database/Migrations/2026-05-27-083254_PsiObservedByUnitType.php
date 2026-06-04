@@ -48,7 +48,7 @@ class PsiObservedByUnitType extends Migration
         ]);
         // table attribute
         $this->forge->addPrimaryKey('idx');
-        $this->forge->addUniqueKey('checking_part', "uq_" . $this->table . '_idx');
+        $this->forge->addUniqueKey(['checking_part', 'spot', 'danger_tag', 'equipment_type'], "uq_" . $this->table . '_idx');
 
         // create the table
         $this->forge->createTable($this->table);
