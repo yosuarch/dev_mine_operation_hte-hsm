@@ -10,7 +10,7 @@ class UploadPSIRecord extends BaseController
 {
     public function index()
     {
-        // 1. Optimize PHP environment for processing
+        // 1. Resource and Timeout Management
         ini_set('memory_limit', '512M');
         set_time_limit(300);
 
@@ -24,9 +24,11 @@ class UploadPSIRecord extends BaseController
         $sheetData = $spreadsheet->getActiveSheet()->toArray(null, true, true, true);
 
         $db = \Config\Database::connect();
-        $builder = $db->table('psi_record');
 
-        // Pre-load reference lists to memory for O(1) lookups
+        // Cleanup old logs (Garbage Collector)
+        $db->query("DELETE FROM psi_record_upload_results WHERE created_at < NOW() - INTERVAL 1 HOUR");
+
+        // Pre-load reference lists
         $equipList = array_change_key_case(array_column($db->table('equipment_register')->select("CONCAT(text_code, num_code) as code, idx")->get()->getResultArray(), 'idx', 'code'), CASE_LOWER);
         $shiftList = array_change_key_case(array_column($db->table('general_working_shift')->select("code, idx")->get()->getResultArray(), 'idx', 'code'), CASE_LOWER);
         $mpList    = array_change_key_case(array_column($db->table('mp_list')->select("name, idx")->get()->getResultArray(), 'idx', 'name'), CASE_LOWER);
@@ -37,22 +39,31 @@ class UploadPSIRecord extends BaseController
         $db->transBegin();
         try {
             foreach ($sheetData as $index => $row) {
-                if ($index == 1) continue; // Skip header
+                if ($index == 1) continue;
                 $summary['total']++;
 
-                // Corrected Date Parsing
-                $rawDate = $row['C'];
+                // Date Parsing
+                // Inside your foreach loop:
+                $cell = $spreadsheet->getActiveSheet()->getCell('C' . $index);
+                $cellValue = $cell->getValue();
                 $dateFormated = null;
 
-                if (is_numeric($rawDate)) {
-                    // Excel date serial number (e.g., 46163)
-                    $dateFormated = \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject($rawDate)->format('Y-m-d');
-                } elseif (!empty($rawDate)) {
-                    // String date format (e.g., '2026-07-24')
-                    $time = strtotime($rawDate);
-                    if ($time !== false) {
-                        $dateFormated = date('Y-m-d', $time);
-                    }
+                if (is_numeric($cellValue) && $cellValue > 25569) {
+                    // Correct way: parse to object, THEN format to string immediately
+                    $dateFormated = \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject($cellValue)->format('Y-m-d');
+                } elseif (!empty($cellValue)) {
+                    // If it's a string, try to parse it
+                    $d = \DateTime::createFromFormat('d/m/Y', $cellValue) ?:
+                        \DateTime::createFromFormat('m/d/Y', $cellValue) ?:
+                        \DateTime::createFromFormat('Y-m-d', $cellValue);
+
+                    $dateFormated = $d ? $d->format('Y-m-d') : null;
+                }
+
+                // Ensure we have a string before adding to array
+                if (!$dateFormated) {
+                    $summary['errors'][] = ['row' => $index, 'reason' => 'Invalid date format: ' . $cellValue];
+                    continue;
                 }
 
                 $equipIdx = $equipList[mb_strtolower($row['B'])] ?? null;
@@ -78,26 +89,19 @@ class UploadPSIRecord extends BaseController
                     'modified_at'     => date('Y-m-d H:i:s')
                 ];
 
-                // Upsert logic relies on your UNIQUE index in the database
-                // Using Query Builder's upsert handles the check-then-update/insert
-                $builder->upsert($data);
-
-                // Track stats (upsert doesn't return affected rows easily in all drivers)
-                // For a more precise count, check if record exists first, but upsert is faster
+                $db->table('psi_record')->upsert($data);
                 $summary['inserted']++;
             }
-
             $db->transCommit();
         } catch (\Exception $e) {
             $db->transRollback();
-            return redirect()->back()->with('error', 'Database error: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Critical DB Error: ' . $e->getMessage());
         }
-        // session_start();
-        $db->table('import_logs')->insert([
-            'data' => json_encode($summary),
-            'created_at' => date('Y-m-d H:i:s')
-        ]);
+
+        // Store result in DB, pass only the ID to the session
+        $db->table('psi_record_upload_results')->insert(['summary_json' => json_encode($summary)]);
         $logId = $db->insertID();
-        return redirect()->to('/prestart-inspection/result/' . $logId);
+
+        return redirect()->back()->with('result_id', $logId);
     }
 }
