@@ -45,7 +45,7 @@ class AuthGroups extends ShieldAuthGroups
             'title'       => 'Super Admin',
             'description' => 'Complete control of the site.',
         ],
-        'admin' => [
+        'webappadmin' => [
             'title'       => 'Admin',
             'description' => 'Day to day administrators of the site.',
         ],
@@ -60,6 +60,18 @@ class AuthGroups extends ShieldAuthGroups
         'beta' => [
             'title'       => 'Beta User',
             'description' => 'Has access to beta-level features.',
+        ],
+        'operator' => [
+            'title'       => 'Operator or Drive',
+            'description' => 'Operator or drive to access information or input some restricted data'
+        ],
+        'safetyOfficer' => [
+            'title'       => 'Safety Office',
+            'description' => 'Safety office that can access related data to OHSE departement'
+        ],
+        'safetyOfficer' => [
+            'title'       => 'Safety Office',
+            'description' => 'Safety office that can access related data to OHSE departement'
         ],
     ];
 
