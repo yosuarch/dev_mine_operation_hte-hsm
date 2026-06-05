@@ -14,10 +14,6 @@ class UploadPSIRecord extends BaseController
         ini_set('memory_limit', '512M');
         set_time_limit(300);
 
-        if (session_status() === PHP_SESSION_ACTIVE) {
-            session_write_close();
-        }
-
         $file = $this->request->getFile('psiRecording');
         if (!$file->isValid() || $file->hasMoved()) {
             return redirect()->back()->with('error', 'Invalid file upload.');
@@ -97,7 +93,11 @@ class UploadPSIRecord extends BaseController
             return redirect()->back()->with('error', 'Database error: ' . $e->getMessage());
         }
         session_start();
-        session()->setFlashdata('summary', $summary);
-        return redirect()->back()->with('summary', $summary);
+        $db->table('import_logs')->insert([
+            'data' => json_encode($summary),
+            'created_at' => date('Y-m-d H:i:s')
+        ]);
+        $logId = $db->insertID();
+        return redirect()->to('/prestart-inspection/result/' . $logId);
     }
 }
