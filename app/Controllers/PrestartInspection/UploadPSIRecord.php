@@ -40,9 +40,20 @@ class UploadPSIRecord extends BaseController
                 if ($index == 1) continue; // Skip header
                 $summary['total']++;
 
-                // Date parsing
+                // Corrected Date Parsing
                 $rawDate = $row['C'];
-                $dateFormated = is_numeric($rawDate) ? Date::excelToDateTimeObject($rawDate)->format('Y-m-d') : (date('Y-m-d', strtotime($rawDate)) ?: null);
+                $dateFormated = null;
+
+                if (is_numeric($rawDate)) {
+                    // Excel date serial number (e.g., 46163)
+                    $dateFormated = \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject($rawDate)->format('Y-m-d');
+                } elseif (!empty($rawDate)) {
+                    // String date format (e.g., '2026-07-24')
+                    $time = strtotime($rawDate);
+                    if ($time !== false) {
+                        $dateFormated = date('Y-m-d', $time);
+                    }
+                }
 
                 $equipIdx = $equipList[mb_strtolower($row['B'])] ?? null;
                 $shiftIdx = $shiftList[mb_strtolower($row['D'])] ?? null;
