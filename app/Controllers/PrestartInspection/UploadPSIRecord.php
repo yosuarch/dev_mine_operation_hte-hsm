@@ -11,7 +11,7 @@ class UploadPSIRecord extends BaseController
     public function index()
     {
         // 1. Resource and Timeout Management
-        ini_set('memory_limit', '512M');
+        ini_set('memory_limit', '1024M');
         set_time_limit(300);
 
         $file = $this->request->getFile('psiRecording');
