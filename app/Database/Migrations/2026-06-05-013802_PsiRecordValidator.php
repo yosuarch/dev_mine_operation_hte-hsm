@@ -107,7 +107,7 @@ class PsiRecordValidator extends Migration
         $this->forge->addUniqueKey(['date', 'shift', 'equipment_id', 'operator_name', 'hm_start', 'hm_end', 'checked_part'], "uq_" . $this->table . '_idx');
 
         // create the table
-        $this->forge->createTable($this->table, false, ['comment' => 'for indexing on this table we dont use the primary key field inside this table']);
+        $this->forge->createTable($this->table, true, ['comment' => 'for indexing on this table we dont use the primary key field inside this table']);
 
         $db = Database::connect();
 
@@ -176,6 +176,6 @@ class PsiRecordValidator extends Migration
         $db->query("DROP TRIGGER IF EXISTS after_psi_record_update");
         $db->query("DROP TRIGGER IF EXISTS after_psi_record_delete");
         // drop the table
-        $this->forge->dropTable($this->table);
+        $this->forge->dropTable($this->table, true);
     }
 }
