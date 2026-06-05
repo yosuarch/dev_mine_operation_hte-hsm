@@ -92,7 +92,7 @@ class UploadPSIRecord extends BaseController
             $db->transRollback();
             return redirect()->back()->with('error', 'Database error: ' . $e->getMessage());
         }
-        session_start();
+        // session_start();
         $db->table('import_logs')->insert([
             'data' => json_encode($summary),
             'created_at' => date('Y-m-d H:i:s')
