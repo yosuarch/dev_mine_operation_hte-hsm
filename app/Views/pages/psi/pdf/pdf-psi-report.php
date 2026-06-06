@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>P2H Report</title>
 
     <style>
         @page {
@@ -13,9 +13,7 @@
 
         body {
             font-family: 'Helvetica', sans-serif;
-            /* Contoh font standar */
         }
-
 
         .pageHeader {
             position: fixed;
@@ -27,7 +25,6 @@
             padding-bottom: 10px;
         }
 
-        /* 2. Container untuk gradient yang memenuhi lebar 90% */
         .header-bg {
             position: absolute;
             top: 0;
@@ -50,7 +47,6 @@
             background-color: #2d3628;
             left: 0;
             z-index: 1;
-
         }
 
         .s-2 {
@@ -70,7 +66,6 @@
             font-size: 3mm;
         }
 
-        /* 3. Container khusus logo di kanan */
         .logo-container {
             position: absolute;
             top: 0;
@@ -84,10 +79,8 @@
             height: 80px;
             width: auto;
             margin-top: 10px;
-            /* Vertically center */
         }
 
-        /* Styling Konten Utama */
         .mainContent {
             padding: 0;
             color: #333;
@@ -118,35 +111,21 @@
             border-collapse: collapse;
         }
 
-        /* .details th,
-        .details td {
-            width: 25%;
-            word-wrap: break-word;
-            overflow: hidden;
-            pad: 8px;
-            border-bottom: 1px solid #eee;
-        } */
-
         .details th:nth-child(1) {
             width: 35%;
         }
 
-        /* Check Item lebih lebar */
         .details th:nth-child(2) {
             width: 15%;
         }
 
-        /* Danger Tag */
         .details th:nth-child(3) {
             width: 15%;
         }
 
-        /* Status */
         .details th:nth-child(4) {
             width: 35%;
         }
-
-        /* Note */
 
         table {
             width: 100%;
@@ -180,6 +159,21 @@
             background: #ff8a8a;
             color: #440000;
         }
+
+        /* Specific styles for the signature table */
+        .signature-table {
+            border: 1px solid #ddd;
+        }
+
+        .signature-table th {
+            background-color: #627254;
+            /* Lighter green to distinguish from main table */
+            padding: 6px 10px;
+        }
+
+        .signature-table td {
+            vertical-align: middle;
+        }
     </style>
 </head>
 
@@ -190,6 +184,7 @@
             <div class="s-2 bago"></div>
             <div class="s-3 bago">
                 <h1><small>Mine Operation - P2H Report</small></h1>
+                <p><small>This page displays only active defects identified during pre-start inspections. It does not reflect fully operational equipment; please use this list to prioritize urgent maintenance and safety repairs.</small></p>
             </div>
         </div>
 
@@ -197,6 +192,7 @@
             <img src="<?= FCPATH . 'asset/page/template/logo_1-1.png'; ?>" alt="hte_logo" id="hte_logo">
         </div>
     </div>
+
     <div class="mainContent">
         <?php if (!empty($combined_data)): ?>
             <?php foreach ($combined_data as $typeName => $sessions): ?>
@@ -208,12 +204,12 @@
                     <?php foreach ($sessions as $item): ?>
                         <div class="equipment-card">
                             <div class="equipment-meta">
-                                <table style="width: 100%;">
+                                <table style="width: 100%; margin-top: 0;">
                                     <tr>
-                                        <td style="font-size: large;"><strong>ID:</strong> <?= esc($item['equipment_id']) ?></td>
-                                        <td><strong>Shift:</strong> <?= esc($item['shift']) ?></td>
-                                        <td><strong>Date:</strong> <?= esc($item['date']) ?></td>
-                                        <td><strong>HM:</strong> <?= esc($item['hm_start']) ?> - <?= esc($item['hm_end']) ?></td>
+                                        <td style="font-size: large; border: none;"><strong>ID:</strong> <?= esc($item['equipment_id']) ?></td>
+                                        <td style="border: none;"><strong>Shift:</strong> <?= esc($item['shift']) ?></td>
+                                        <td style="border: none;"><strong>Date:</strong> <?= esc($item['date']) ?></td>
+                                        <td style="border: none;"><strong>HM:</strong> <?= esc($item['hm_start']) ?> - <?= esc($item['hm_end']) ?></td>
                                     </tr>
                                 </table>
                             </div>
@@ -229,11 +225,8 @@
                                 </thead>
                                 <tbody>
                                     <?php
-                                    // Explode the combined string
                                     $rows = explode(';;', $item['psi_details']);
-
                                     foreach ($rows as $rowData):
-                                        // Split into parts: [0] => Check Item, [1] => Tag, [2] => Note
                                         $parts = explode('|', $rowData);
                                         $checkName = $parts[0] ?? '-';
                                         $tagName   = $parts[1] ?? '-';
@@ -248,6 +241,43 @@
                                     <?php endforeach; ?>
                                 </tbody>
                             </table>
+
+                            <?php if (!empty($item['validation'])): ?>
+                                <table class="signature-table" style="margin-top: 15px;">
+                                    <thead>
+                                        <tr>
+                                            <th style="width: 35%;">Name</th>
+                                            <th style="width: 40%;">Note</th>
+                                            <th style="width: 25%; text-align: center;">Signature</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td><strong>FM:</strong> <?= esc($item['validation']['fm_name'] ?? '-') ?></td>
+                                            <td><?= esc($item['validation']['fm_note'] ?? '-') ?></td>
+                                            <td style="text-align: center; padding: 2px;">
+                                                <?php if (!empty($item['validation']['fm_sign'])): ?>
+                                                    <img src="<?= $item['validation']['fm_sign'] ?>" style="max-height: 40px; width: auto;" alt="FM Sign">
+                                                <?php else: ?>
+                                                    <span style="color: #999; font-size: 10px;">-</span>
+                                                <?php endif; ?>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>SPV:</strong> <?= esc($item['validation']['spv_name'] ?? '-') ?></td>
+                                            <td><?= esc($item['validation']['spv_note'] ?? '-') ?></td>
+                                            <td style="text-align: center; padding: 2px;">
+                                                <?php if (!empty($item['validation']['spv_sign'])): ?>
+                                                    <img src="<?= $item['validation']['spv_sign'] ?>" style="max-height: 40px; width: auto;" alt="SPV Sign">
+                                                <?php else: ?>
+                                                    <span style="color: #999; font-size: 10px;">-</span>
+                                                <?php endif; ?>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            <?php endif; ?>
+
                         </div>
                     <?php endforeach; ?>
                 </div>
