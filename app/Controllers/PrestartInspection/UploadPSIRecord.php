@@ -8,84 +8,117 @@ use PhpOffice\PhpSpreadsheet\Shared\Date;
 
 class UploadPSIRecord extends BaseController
 {
+    /**
+     * Normalizes strings by removing all special characters, 
+     * converting to lowercase, and trimming.
+     */
+    private function normalize($value)
+    {
+        $str = mb_strtolower(trim((string)$value));
+        return preg_replace('/[^a-z0-9]/', '', $str);
+    }
+
+    private function safeTrim($value)
+    {
+        return trim((string)$value);
+    }
+
     public function index()
     {
-        // 1. Resource and Timeout Management
-        ini_set('memory_limit', '1024M');
+        ini_set('memory_limit', '512M');
         set_time_limit(300);
 
         $file = $this->request->getFile('psiRecording');
-        if (!$file->isValid() || $file->hasMoved()) {
-            return redirect()->back()->with('error', 'Invalid file upload.');
-        }
+        if (!$file->isValid()) return redirect()->back()->with('error', 'Invalid file.');
 
-        $filePath = $file->getTempName();
-        $spreadsheet = IOFactory::load($filePath);
+        $spreadsheet = IOFactory::load($file->getTempName());
         $sheetData = $spreadsheet->getActiveSheet()->toArray(null, true, true, true);
+
+        // Header mapping
+        $headerRow = array_map(function ($value) {
+            return $this->safeTrim($value);
+        }, $sheetData[1]);
+
+        $headerMap = [];
+        foreach ($headerRow as $colLetter => $headerName) {
+            if (!empty($headerName)) {
+                $headerMap[mb_strtolower($headerName)] = $colLetter;
+            }
+        }
 
         $db = \Config\Database::connect();
 
-        // Cleanup old logs (Garbage Collector)
-        $db->query("DELETE FROM psi_record_upload_results WHERE created_at < NOW() - INTERVAL 1 HOUR");
+        // Pre-load and normalize reference lists
+        $equipList = [];
+        foreach ($db->table('equipment_register')->select("CONCAT(text_code, num_code) as full_code, idx")->get()->getResultArray() as $row) {
+            $equipList[$this->normalize($row['full_code'])] = $row['idx'];
+        }
 
-        // Pre-load reference lists
-        $equipList = array_change_key_case(array_column($db->table('equipment_register')->select("CONCAT(text_code, num_code) as code, idx")->get()->getResultArray(), 'idx', 'code'), CASE_LOWER);
-        $shiftList = array_change_key_case(array_column($db->table('general_working_shift')->select("code, idx")->get()->getResultArray(), 'idx', 'code'), CASE_LOWER);
-        $mpList    = array_change_key_case(array_column($db->table('mp_list')->select("name, idx")->get()->getResultArray(), 'idx', 'name'), CASE_LOWER);
-        $partList  = array_change_key_case(array_column($db->table('psi_unique_observed_item')->select("checking_part_idn, idx")->get()->getResultArray(), 'idx', 'checking_part_idn'), CASE_LOWER);
+        $partList = [];
+        foreach ($db->table('psi_unique_observed_item')->select("checking_part_idn, idx")->get()->getResultArray() as $row) {
+            $partList[$this->normalize($row['checking_part_idn'])] = $row['idx'];
+        }
 
-        $summary = ['total' => 0, 'inserted' => 0, 'updated' => 0, 'errors' => []];
+        $mpList = [];
+        foreach ($db->table('mp_list')->select("name, idx")->get()->getResultArray() as $row) {
+            $mpList[$this->normalize($row['name'])] = $row['idx'];
+        }
+
+        $shiftList = ['day' => 1, 'night' => 2];
+
+        $summary = ['total' => 0, 'inserted' => 0, 'errors' => []];
 
         $db->transBegin();
         try {
             foreach ($sheetData as $index => $row) {
                 if ($index == 1) continue;
+                if (empty(array_filter($row))) continue;
                 $summary['total']++;
 
+                // Retrieve raw values
+                $valDate  = $row[$headerMap['date'] ?? ''] ?? null;
+                $nEquip   = $this->normalize($row[$headerMap['equipment_id'] ?? ''] ?? '');
+                $nShift   = $this->normalize($row[$headerMap['shift'] ?? ''] ?? '');
+                $nOp      = $this->normalize($row[$headerMap['operator_name'] ?? ''] ?? '');
+                $nFM      = $this->normalize($row[$headerMap['fm_name'] ?? ''] ?? '');
+                $nSPV     = $this->normalize($row[$headerMap['spv_name'] ?? ''] ?? '');
+                $nPart    = $this->normalize($row[$headerMap['checking_part'] ?? ''] ?? '');
+
                 // Date Parsing
-                // Inside your foreach loop:
-                $cell = $spreadsheet->getActiveSheet()->getCell('C' . $index);
-                $cellValue = $cell->getValue();
-                $dateFormated = null;
+                $dateFormatted = (is_numeric($valDate) && $valDate > 25569)
+                    ? Date::excelToDateTimeObject($valDate)->format('Y-m-d')
+                    : (strtotime($valDate) ? date('Y-m-d', strtotime($valDate)) : null);
 
-                if (is_numeric($cellValue) && $cellValue > 25569) {
-                    // Correct way: parse to object, THEN format to string immediately
-                    $dateFormated = \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject($cellValue)->format('Y-m-d');
-                } elseif (!empty($cellValue)) {
-                    // If it's a string, try to parse it
-                    $d = \DateTime::createFromFormat('d/m/Y', $cellValue) ?:
-                        \DateTime::createFromFormat('m/d/Y', $cellValue) ?:
-                        \DateTime::createFromFormat('Y-m-d', $cellValue);
+                // Validation
+                $missing = [];
+                if (!isset($equipList[$nEquip])) $missing[] = 'Equipment';
+                if (!isset($shiftList[$nShift])) $missing[] = 'Shift';
+                if (!isset($mpList[$nOp]))       $missing[] = 'Operator';
+                if (!isset($mpList[$nFM]))       $missing[] = 'FM Name';
+                if (!isset($mpList[$nSPV]))      $missing[] = 'SPV Name';
+                if (!isset($partList[$nPart]))   $missing[] = 'Part';
+                if (!$dateFormatted)             $missing[] = 'Date';
 
-                    $dateFormated = $d ? $d->format('Y-m-d') : null;
-                }
-
-                // Ensure we have a string before adding to array
-                if (!$dateFormated) {
-                    $summary['errors'][] = ['row' => $index, 'reason' => 'Invalid date format: ' . $cellValue];
+                if (!empty($missing)) {
+                    $summary['errors'][] = ['row' => $index, 'reason' => 'Missing: ' . implode(', ', $missing)];
                     continue;
                 }
 
-                $equipIdx = $equipList[mb_strtolower($row['B'])] ?? null;
-                $shiftIdx = $shiftList[mb_strtolower($row['D'])] ?? null;
-                $opIdx    = $mpList[mb_strtolower($row['E'])] ?? null;
-                $partIdx  = $partList[mb_strtolower($row['H'])] ?? null;
-
-                if (!$equipIdx || !$shiftIdx || !$opIdx || !$partIdx || !$dateFormated) {
-                    $summary['errors'][] = ['row' => $index, 'reason' => 'Missing reference data or invalid date.'];
-                    continue;
-                }
-
+                // Data mapping
                 $data = [
-                    'equipment_id'    => (int)$equipIdx,
-                    'date'            => $dateFormated,
-                    'shift'           => (int)$shiftIdx,
-                    'operator_name'   => (int)$opIdx,
-                    'hourmeter_start' => is_numeric($row['F']) ? (float)$row['F'] : 0,
-                    'hourmeter_end'   => is_numeric($row['G']) ? (float)$row['G'] : 0,
-                    'checking_part'   => (int)$partIdx,
-                    'checking_status' => (strcasecmp($row['I'] ?? '', 'TRUE') === 0) ? 1 : 0,
-                    'checking_note'   => !empty($row['J']) ? (string)$row['J'] : 'no issue',
+                    'equipment_id'    => (int)$equipList[$nEquip],
+                    'date'            => $dateFormatted,
+                    'shift'           => (int)$shiftList[$nShift],
+                    'operator_name'   => (int)$mpList[$nOp],
+                    'fm_name'         => (int)$mpList[$nFM],
+                    'fm_note'         => $row[$headerMap['fm_note'] ?? ''] ?? 'this is data is a dummy_please check the actual sheet to make confirmation or ask the admin',
+                    'spv_name'        => (int)$mpList[$nSPV],
+                    'spv_note'        => $row[$headerMap['spv_note'] ?? ''] ?? 'this is data is a dummy_please check the actual sheet to make confirmation or ask the admin',
+                    'hourmeter_start' => (is_numeric($row[$headerMap['hourmeter_start'] ?? ''])) ? (float)$row[$headerMap['hourmeter_start']] : 0,
+                    'hourmeter_end'   => (is_numeric($row[$headerMap['hourmeter_end'] ?? ''])) ? (float)$row[$headerMap['hourmeter_end']] : 0,
+                    'checking_part'   => (int)$partList[$nPart],
+                    'checking_status' => 1,
+                    'checking_note'   => $row[$headerMap['checking_note'] ?? ''] ?? 'no issue',
                     'modified_at'     => date('Y-m-d H:i:s')
                 ];
 
@@ -95,13 +128,10 @@ class UploadPSIRecord extends BaseController
             $db->transCommit();
         } catch (\Exception $e) {
             $db->transRollback();
-            return redirect()->back()->with('error', 'Critical DB Error: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'DB Error: ' . $e->getMessage());
         }
 
-        // Store result in DB, pass only the ID to the session
         $db->table('psi_record_upload_results')->insert(['summary_json' => json_encode($summary)]);
-        $logId = $db->insertID();
-
-        return redirect()->back()->with('result_id', $logId);
+        return redirect()->back()->with('result_id', $db->insertID());
     }
 }

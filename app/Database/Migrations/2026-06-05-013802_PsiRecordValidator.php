@@ -118,8 +118,8 @@ class PsiRecordValidator extends Migration
         for each row
         begin
         insert into dev_hte.' . $this->table . '
-        (`date`, `equipment_id`, `shift`, `operator_name`, `hm_start`, `hm_end`, `checked_part`, `operator_note`)
-        VALUES (NEW.`date`, NEW.equipment_id, NEW.`shift`, NEW.operator_name, NEW.hourmeter_start, NEW.hourmeter_end, NEW.checking_part, NEW.checking_note)
+        (`date`, `equipment_id`, `shift`, `operator_name`, `hm_start`, `hm_end`, `checked_part`, `operator_note`, `fm_name`, `fm_note`, `spv_name`, `spv_note`)
+        VALUES (NEW.`date`, NEW.equipment_id, NEW.`shift`, NEW.operator_name, NEW.hourmeter_start, NEW.hourmeter_end, NEW.checking_part, NEW.checking_note, NEW.fm_name, NEW.fm_note, NEW.spv_name, NEW.spv_note)
         on duplicate key update
         operator_note = values(operator_note);
         end
@@ -140,14 +140,22 @@ class PsiRecordValidator extends Migration
             `hm_start` = NEW.hourmeter_start,
             `hm_end` = NEW.hourmeter_end,
             `checked_part` = NEW.checking_part,
-            `operator_note` = NEW.checking_note
+            `operator_note` = NEW.checking_note,
+            `fm_name` = NEW.fm_name,
+            `fm_note` = NEW.fm_note,
+            `spv_name` = NEW.spv_name,
+            `spv_note` = NEW.spv_note,
         WHERE `date` = OLD.`date` 
           AND `equipment_id` = OLD.equipment_id 
           AND `shift` = OLD.`shift` 
           AND `operator_name` = OLD.operator_name 
           AND `hm_start` = OLD.hourmeter_start 
           AND `hm_end` = OLD.hourmeter_end
-          AND `checked_part` = OLD.checking_part;
+          AND `checked_part` = OLD.checking_part
+          AND `fm_name` = OLD.fm_name
+          AND `fm_note` = OLD.fm_note
+          AND `spv_name` = OLD.spv_name
+          AND `spv_note` = OLD.spv_note;
         END
         ");
 
@@ -164,7 +172,11 @@ class PsiRecordValidator extends Migration
                 AND `operator_name` = OLD.operator_name 
                 AND `hm_start` = OLD.hourmeter_start 
                 AND `hm_end` = OLD.hourmeter_end
-                AND `checked_part` = OLD.checking_part;
+                AND `checked_part` = OLD.checking_part
+                AND `fm_name` = OLD.fm_name
+                AND `fm_note` = OLD.fm_note
+                AND `spv_name` = OLD.spv_name
+                AND `spv_note` = OLD.spv_note;
             END
         ");
     }

@@ -79,6 +79,28 @@ class PsiRecord extends Migration
                 'null' => true,
                 'comment' => 'user account that input the data',
             ],
+            'fm_name' => [
+                'type' => 'int',
+                'constraint' => 3,
+                'unsigned' => true,
+                'null' => true,
+                'comment' => 'user account that input the data',
+            ],
+            'fm_note' => [
+                'type' => 'text',
+                'default' => 'this is data is a dummy_please check the actual sheet to make confirmation or ask the admin',
+            ],
+            'spv_name' => [
+                'type' => 'int',
+                'constraint' => 3,
+                'unsigned' => true,
+                'null' => true,
+                'comment' => 'user account that input the data',
+            ],
+            'spv_note' => [
+                'type' => 'text',
+                'default' => 'this is data is a dummy_please check the actual sheet to make confirmation or ask the admin',
+            ],
             'created_at' => [
                 'type' => 'datetime',
                 'null' => false,

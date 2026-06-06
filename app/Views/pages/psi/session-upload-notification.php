@@ -1,7 +1,7 @@
 <?php if ($resultId = session('result_id')): ?>
     <?php
     $db = \Config\Database::connect();
-    $res = $db->table('psi_record_upload_results')->where('id', $resultId)->get()->getRow();
+    $res = $db->table('psi_record_upload_results')->where('idx', $resultId)->get()->getRow();
     $sum = json_decode($res->summary_json, true);
     ?>
 
