@@ -40,19 +40,40 @@ class ControllerGetExcelReport extends BaseController
                 $colLetter++;
             }
 
-            $rowNumber = 2; // row 1 is header row 2 is the data
+            // Define your date columns here for easy maintenance
+            $dateColumns = ['date'];
+
             $rowNumber = 2;
             foreach ($result as $dataRow) {
                 $colLetter = 'A';
 
-                // FIX: Iterate over $dataRow, not $result
-                foreach ($dataRow as $cellValue) {
-                    // Set the value into the cell
+                foreach ($dataRow as $columnName => $cellValue) {
+                    // If the column name is in our date list, convert it
+                    if (in_array($columnName, $dateColumns) && !empty($cellValue)) {
+                        // 1. Create the date object and force time to midnight
+                        $dateObj = \DateTime::createFromFormat('Y-m-d', substr($cellValue, 0, 10));
+                        $dateObj->setTime(0, 0, 0); // Force time to midnight exactly
+
+                        // 2. Convert to Excel format
+                        $cellValue = \PhpOffice\PhpSpreadsheet\Shared\Date::PHPToExcel($dateObj);
+                    }
+
                     $sheet->setCellValue($colLetter . $rowNumber, $cellValue);
                     $colLetter++;
                 }
                 $rowNumber++;
             }
+
+            // 1. Define the format code
+            $dateStyle = 'yyyy-mm-dd'; // You can also use 'dd/mm/yyyy' etc.
+
+            // 2. Get the highest row to cover the whole column
+            $highestRow = $sheet->getHighestRow();
+
+            // 3. Apply the format to column A (from row 2 to the last row)
+            $sheet->getStyle('A2:A' . $highestRow)
+                ->getNumberFormat()
+                ->setFormatCode($dateStyle);
 
             $columnWidths = [
                 'A' => 15,
