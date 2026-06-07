@@ -4,7 +4,7 @@ namespace App\Controllers\PrestartInspection;
 
 use App\Controllers\BaseController;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
-use PhpOffice\PhpSpreadsheet\Writer\xlsx;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use CodeIgniter\HTTP\ResponseInterface;
 
 class ControllerGetExcelReport extends BaseController
