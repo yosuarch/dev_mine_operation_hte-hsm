@@ -18,6 +18,9 @@ $routes->group('', ['filter' => 'session'], function ($routes) {
     $routes->get('/prestart-insepction', 'PrestartInspection\ControllerPSI::index');
     $routes->get('/manpower', 'Manpower\ControllerManpower::index');
 
+    $routes->get('/operator-driver', 'PrestartInspection\Mobile\ControllerOperatorDriver::index');
+
+
     // Uploads & Ajax (Protected)
     $routes->post('/preview-psi-record', 'PrestartInspection\PreviewBeforeUpload::index');
     $routes->post('/upload-psi-record', 'PrestartInspection\UploadPSIRecord::index');
