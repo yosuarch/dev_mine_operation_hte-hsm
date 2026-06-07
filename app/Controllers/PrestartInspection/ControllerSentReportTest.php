@@ -100,7 +100,7 @@ class ControllerSentReportTest extends BaseController
         $dompdf->render();
 
         // Output to browser
-        $dompdf->stream("P2H_Report_" . date('Y-m-d H:i:s') . ".pdf", ['Attachment' => 0]);
+        $dompdf->stream("P2H_Report_" . date('Y-m-d H:i:s') . ".pdf", ['Attachment' => 1]);
         exit(); // Crucial to prevent output pollution
     }
 }
