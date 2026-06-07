@@ -30,6 +30,7 @@ $routes->group('', ['filter' => 'session'], function ($routes) {
     // Testing
     $routes->get('/test-mail', 'TestMail::sendTestEmail');
     $routes->get('/psi-generate-pdf', 'PrestartInspection\ControllerSentReportTest::psiDailyDetailReport');
+    $routes->get('/psi-generate-excel', 'PrestartInspection\ControllerGetExcelReport::index');
 });
 
 service('auth')->routes($routes);

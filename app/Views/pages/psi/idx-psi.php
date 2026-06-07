@@ -20,7 +20,10 @@
         Import Record
     </button>
     <a href="<?= base_url('/psi-generate-pdf') ?>" class="btn btn-warning">
-        Generate Report
+        PDF
+    </a>
+    <a href="<?= base_url('/psi-generate-excel') ?>" class="btn btn-info">
+        Excel
     </a>
     <!-- <button type="button" id="generateReport" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#generateReportModal">
         Generate Report
