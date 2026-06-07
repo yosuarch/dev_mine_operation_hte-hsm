@@ -183,7 +183,7 @@
             <div class="s-1 bago"></div>
             <div class="s-2 bago"></div>
             <div class="s-3 bago">
-                <h1><small>Mine Operation - P2H Report</small></h1>
+                <h1><small>P2H Notification</small></h1>
                 <p><small>This page displays only active defects identified during pre-start inspections. It does not reflect fully operational equipment; please use this list to prioritize urgent maintenance and safety repairs.</small></p>
             </div>
         </div>
@@ -206,11 +206,28 @@
                             <div class="equipment-meta">
                                 <table style="width: 100%; margin-top: 0;">
                                     <tr>
-                                        <td style="font-size: large; border: none;"><strong>ID:</strong> <?= esc($item['equipment_id']) ?></td>
-                                        <td style="border: none;"><strong>Shift:</strong> <?= esc($item['shift']) ?></td>
-                                        <td style="border: none;"><strong>Date:</strong> <?= esc($item['date']) ?></td>
-                                        <td style="border: none;"><strong>HM:</strong> <?= esc($item['hm_start']) ?> - <?= esc($item['hm_end']) ?></td>
+                                        <td style="font-size: large; border: none; width: 25%;"><strong>ID:</strong> <?= esc($item['equipment_id']) ?></td>
+                                        <td style="border: none; width: 20%;"><strong>Shift:</strong> <?= esc($item['shift']) ?></td>
+                                        <td style="border: none; width: 25%;"><strong>Date:</strong> <?= esc($item['date']) ?></td>
+                                        <td style="border: none; width: 30%;"><strong>HM:</strong> <?= esc($item['hm_start']) ?> - <?= esc($item['hm_end']) ?></td>
                                     </tr>
+
+                                    <?php if (!empty($item['operator'])): ?>
+                                        <tr>
+                                            <td colspan="2" style="border: none; padding-top: 0;">
+                                                <strong><?= strtoupper(esc($item['operator']['employe_name'])) ?></strong> (<?= esc($item['operator']['employee_id']) ?>)
+                                            </td>
+                                            <td colspan="2" style="border: none; padding-top: 0;">
+                                                <strong>Gender:</strong> <?= esc($item['operator']['gender']) ?>
+                                            </td>
+                                        </tr>
+                                    <?php else: ?>
+                                        <tr>
+                                            <td colspan="4" style="border: none; padding-top: 0; color: grey; font-style: italic;">
+                                                Operator information not available
+                                            </td>
+                                        </tr>
+                                    <?php endif; ?>
                                 </table>
                             </div>
 

@@ -30,6 +30,9 @@ class ControllerSentReportTest extends BaseController
             ->get()
             ->getResultArray();
 
+        // 5. Fetch Operator Records (Query 3)
+        $operators = $db->table('view_psi_operator_name')->get()->getResultArray();
+
         // 5. Map Signatures to a Lookup Array
         // We use equipment_id + shift + date as a unique key to match records
         $validator_map = [];
@@ -51,16 +54,28 @@ class ControllerSentReportTest extends BaseController
             ];
         }
 
-        // 6. Data Aggregation (Combine Main Records with their Signatures)
+        // Map Operators
+        $operator_map = [];
+        foreach ($operators as $op) {
+            // Note: Query uses "AS DATE" (uppercase)
+            $key = $op['equipment_id'] . '_' . $op['shift'] . '_' . $op['DATE'];
+
+            $operator_map[$key] = [
+                'employe_name' => $op['employe_name'],
+                'employee_id'  => $op['employee_id'],
+                'gender'       => $op['gender'],
+            ];
+        }
+
+        // 6. Data Aggregation
         $combined_data = [];
         foreach ($records as $row) {
-            // Note: Your first query uses "AS date" (lowercase), so we use $row['date']
             $key = $row['equipment_id'] . '_' . $row['shift'] . '_' . $row['date'];
 
-            // Attach the validation data if it exists for this specific equipment/shift/date
+            // Attach both validation and operator data
             $row['validation'] = $validator_map[$key] ?? null;
+            $row['operator']   = $operator_map[$key] ?? null; // Attach operator data here
 
-            // Group by equipment type
             $combined_data[$row['type']][] = $row;
         }
 
@@ -85,7 +100,7 @@ class ControllerSentReportTest extends BaseController
         $dompdf->render();
 
         // Output to browser
-        $dompdf->stream("P2H_Report_" . date('Y-m-d H:i:s') . ".pdf", ['Attachment' => 1]);
+        $dompdf->stream("P2H_Report_" . date('Y-m-d H:i:s') . ".pdf", ['Attachment' => 0]);
         exit(); // Crucial to prevent output pollution
     }
 }
