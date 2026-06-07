@@ -75,11 +75,14 @@ class Auth extends ShieldAuth
      */
     public array $redirects = [
         'register'          => '/',
-        'login'             => '/',
-        'logout'            => 'login',
-        'force_reset'       => '/',
-        'permission_denied' => '/',
-        'group_denied'      => '/',
+        // 'login'             => '/',
+        // 'logout'            => '/',
+        // 'force_reset'       => '/',
+        // 'permission_denied' => '/',
+        // 'group_denied'      => '/',
+        // 'register'              => '/',
+        'login'                 => '/admin',
+        'logout'                => '/',
     ];
 
     /**

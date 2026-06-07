@@ -12,6 +12,8 @@ use CodeIgniter\Filters\InvalidChars;
 use CodeIgniter\Filters\PageCache;
 use CodeIgniter\Filters\PerformanceMetrics;
 use CodeIgniter\Filters\SecureHeaders;
+use App\Filters\AuthRedirectFilter;
+use App\Filters\PostFilterLogin;
 
 class Filters extends BaseFilters
 {
@@ -33,7 +35,7 @@ class Filters extends BaseFilters
         'cors'          => Cors::class,
         'forcehttps'    => ForceHTTPS::class,
         'pagecache'     => PageCache::class,
-        'performance'   => PerformanceMetrics::class,
+        'performance'   => PerformanceMetrics::class
     ];
 
     /**
@@ -81,12 +83,15 @@ class Filters extends BaseFilters
                     'register',
                     'auth/a/*',
                     'logout',
+                    '/',
+                    '/landing',
                 ],
             ],
         ],
         'after' => [
             // 'honeypot',
             // 'secureheaders',
+            // 'postLogin',
         ],
     ];
 

@@ -3,31 +3,33 @@
 use CodeIgniter\Router\RouteCollection;
 
 /** @var RouteCollection $routes */
-// $routes->get('/', 'Home::index');
-$routes->get('/', 'DashboardRender::index');
-$routes->get('/prestart-insepction', 'PrestartInspection\ControllerPSI::index');
-$routes->get('/manpower', 'Manpower\ControllerManpower::index');
 
-// uploads and preview
-$routes->post('/preview-psi-record', 'PrestartInspection\PreviewBeforeUpload::index'); // preview the file
-$routes->post('/upload-psi-record', 'PrestartInspection\UploadPSIRecord::index'); // upload the file
+// 1. PUBLIC ROUTES (Landing Page)
+// This fixes the 404 error on GET: /
+$routes->get('/', 'ControllerLandingPage::index');
+$routes->get('/landing', 'ControllerLandingPage::index');
 
-// ajax routes
-$routes->get('/ajax-datatable/prestartrecord', 'PrestartInspection\ControllerGetData::fetchPSIDetail');
-$routes->get('/ajax-common-table/psi-by-equipment-type', 'PrestartInspection\ControllerGetData::getSumIssue');
-$routes->get('/ajax-datatable/manpowerlist', 'Manpower\ControllerGetData::fetchManPowerList');
+// 2. PROTECTED ROUTES (Requires Login)
+// Use Shield's native 'session' filter instead of a custom one
+$routes->group('', ['filter' => 'session'], function ($routes) {
 
-// ajax routes - charting
-$routes->get('/ajax-chart/freq-danger-code', 'PrestartInspection\ControllerGetData::fetchGetDangerCodeFreq');
+    // Pages
+    $routes->get('/admin', 'DashboardRender::index');
+    $routes->get('/prestart-insepction', 'PrestartInspection\ControllerPSI::index');
+    $routes->get('/manpower', 'Manpower\ControllerManpower::index');
 
+    // Uploads & Ajax (Protected)
+    $routes->post('/preview-psi-record', 'PrestartInspection\PreviewBeforeUpload::index');
+    $routes->post('/upload-psi-record', 'PrestartInspection\UploadPSIRecord::index');
+    $routes->get('/ajax-datatable/prestartrecord', 'PrestartInspection\ControllerGetData::fetchPSIDetail');
+    $routes->get('/ajax-common-table/psi-by-equipment-type', 'PrestartInspection\ControllerGetData::getSumIssue');
+    $routes->get('/ajax-datatable/manpowerlist', 'Manpower\ControllerGetData::fetchManPowerList');
+    $routes->get('/ajax-chart/freq-danger-code', 'PrestartInspection\ControllerGetData::fetchGetDangerCodeFreq');
+    $routes->get('/ajax-daily-unit-type', 'PrestartInspection\ControllerEmailReport::getData1');
 
-// testing-link
-//--- dont forget to disable it in the production server
-$routes->get('/test-mail', 'TestMail::sendTestEmail');
-$routes->get('/psi-generate-pdf', 'PrestartInspection\ControllerSentReportTest::psiDailyDetailReport');
-
-
-// sent p2h report
-$routes->get('/ajax-daily-unit-type', 'PrestartInspection\ControllerEmailReport::getData1');
+    // Testing
+    $routes->get('/test-mail', 'TestMail::sendTestEmail');
+    $routes->get('/psi-generate-pdf', 'PrestartInspection\ControllerSentReportTest::psiDailyDetailReport');
+});
 
 service('auth')->routes($routes);
