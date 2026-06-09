@@ -5,28 +5,12 @@ namespace App\Controllers\PrestartInspection;
 use App\Controllers\BaseController;
 use App\Models\PrestartInspection\ModelPsiRecord;
 use Hermawan\DataTables\DataTable;
+use Config\Database;
 use CodeIgniter\HTTP\ResponseInterface;
 
 
 class ControllerGetData extends BaseController
 {
-    // public function fetchRawPSIRecord()
-    // {
-    //     // fetching the raw data
-    //     $data = new ModelPsiRecord();
-    //     $data->select('equipment_id, date, shift, operator_name, checking_part');
-
-    //     return DataTable::of($data)->toJson();
-    // }
-
-    // public function fetchPSIDetail()
-    // {
-    //     $data = new ModelPsiRecord();
-    //     $query = $data->getPSIRecordDetails();
-
-    //     return DataTable::of($query)->toJson();
-    // }
-
     public function fetchPSIDetail()
     {
         $db = \Config\Database::connect();
@@ -54,5 +38,26 @@ class ControllerGetData extends BaseController
         $query = $data->getSumIssue()->get()->getResultArray();
 
         return $this->response->setJSON($query);
+    }
+
+    public function fetchMPList()
+    {
+
+        // 1. Turn off the debug toolbar so it doesn't break the JSON
+        // if (ENVIRONMENT !== 'production') {
+        //     \Config\Services::toolbar()->;
+        // }
+
+        // fetch Manpower name and id
+        $db = Database::connect();
+
+        // table name
+        $mpList = $db->table('view_mp_list')
+            ->select('idx, name, employee_id')
+            ->orderBy('idx', 'ASC')
+            ->get()
+            ->getResultArray();
+
+        return $this->response->setJSON($mpList);
     }
 }

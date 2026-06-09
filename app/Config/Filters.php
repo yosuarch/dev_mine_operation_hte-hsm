@@ -85,6 +85,8 @@ class Filters extends BaseFilters
                     'logout',
                     '/',
                     '/landing',
+                    '/operator-driver',
+                    '/operator-driver/*',
                 ],
             ],
         ],

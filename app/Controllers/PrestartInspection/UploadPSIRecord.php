@@ -75,32 +75,43 @@ class UploadPSIRecord extends BaseController
                 if (empty(array_filter($row))) continue;
                 $summary['total']++;
 
-                // Retrieve raw values
-                $valDate  = $row[$headerMap['date'] ?? ''] ?? null;
-                $nEquip   = $this->normalize($row[$headerMap['equipment_id'] ?? ''] ?? '');
-                $nShift   = $this->normalize($row[$headerMap['shift'] ?? ''] ?? '');
-                $nOp      = $this->normalize($row[$headerMap['operator_name'] ?? ''] ?? '');
-                $nFM      = $this->normalize($row[$headerMap['fm_name'] ?? ''] ?? '');
-                $nSPV     = $this->normalize($row[$headerMap['spv_name'] ?? ''] ?? '');
-                $nPart    = $this->normalize($row[$headerMap['checking_part'] ?? ''] ?? '');
+                // Retrieve raw values for detailed error reporting
+                $rawDate  = $row[$headerMap['date'] ?? ''] ?? null;
+                $rawEquip = $row[$headerMap['equipment_id'] ?? ''] ?? '';
+                $rawShift = $row[$headerMap['shift'] ?? ''] ?? '';
+                $rawOp    = $row[$headerMap['operator_name'] ?? ''] ?? '';
+                $rawFM    = $row[$headerMap['fm_name'] ?? ''] ?? '';
+                $rawSPV   = $row[$headerMap['spv_name'] ?? ''] ?? '';
+                $rawPart  = $row[$headerMap['checking_part'] ?? ''] ?? '';
+
+                // Normalize values for DB lookup
+                $nEquip   = $this->normalize($rawEquip);
+                $nShift   = $this->normalize($rawShift);
+                $nOp      = $this->normalize($rawOp);
+                $nFM      = $this->normalize($rawFM);
+                $nSPV     = $this->normalize($rawSPV);
+                $nPart    = $this->normalize($rawPart);
 
                 // Date Parsing
-                $dateFormatted = (is_numeric($valDate) && $valDate > 25569)
-                    ? Date::excelToDateTimeObject($valDate)->format('Y-m-d')
-                    : (strtotime($valDate) ? date('Y-m-d', strtotime($valDate)) : null);
+                $dateFormatted = (is_numeric($rawDate) && $rawDate > 25569)
+                    ? Date::excelToDateTimeObject($rawDate)->format('Y-m-d')
+                    : (strtotime($rawDate) ? date('Y-m-d', strtotime($rawDate)) : null);
 
-                // Validation
-                $missing = [];
-                if (!isset($equipList[$nEquip])) $missing[] = 'Equipment';
-                if (!isset($shiftList[$nShift])) $missing[] = 'Shift';
-                if (!isset($mpList[$nOp]))       $missing[] = 'Operator';
-                if (!isset($mpList[$nFM]))       $missing[] = 'FM Name';
-                if (!isset($mpList[$nSPV]))      $missing[] = 'SPV Name';
-                if (!isset($partList[$nPart]))   $missing[] = 'Part';
-                if (!$dateFormatted)             $missing[] = 'Date';
+                // Detailed Validation
+                $detailedErrors = [];
+                if (!isset($equipList[$nEquip])) $detailedErrors[] = "Equipment '" . ($rawEquip ?: 'BLANK') . "' not found in DB";
+                if (!isset($shiftList[$nShift])) $detailedErrors[] = "Shift '" . ($rawShift ?: 'BLANK') . "' invalid";
+                if (!isset($mpList[$nOp]))       $detailedErrors[] = "Operator '" . ($rawOp ?: 'BLANK') . "' not found in DB";
+                // if (!isset($mpList[$nFM]))       $detailedErrors[] = "FM Name '" . ($rawFM ?: 'BLANK') . "' not found in DB";
+                // if (!isset($mpList[$nSPV]))      $detailedErrors[] = "SPV Name '" . ($rawSPV ?: 'BLANK') . "' not found in DB";
+                if (!isset($partList[$nPart]))   $detailedErrors[] = "Part '" . ($rawPart ?: 'BLANK') . "' not found in DB";
+                if (!$dateFormatted)             $detailedErrors[] = "Date '" . ($rawDate ?: 'BLANK') . "' invalid";
 
-                if (!empty($missing)) {
-                    $summary['errors'][] = ['row' => $index, 'reason' => 'Missing: ' . implode(', ', $missing)];
+                if (!empty($detailedErrors)) {
+                    $summary['errors'][] = [
+                        'row'    => $index,
+                        'reason' => implode(' | ', $detailedErrors)
+                    ];
                     continue;
                 }
 
@@ -110,10 +121,10 @@ class UploadPSIRecord extends BaseController
                     'date'            => $dateFormatted,
                     'shift'           => (int)$shiftList[$nShift],
                     'operator_name'   => (int)$mpList[$nOp],
-                    'fm_name'         => (int)$mpList[$nFM],
-                    'fm_note'         => $row[$headerMap['fm_note'] ?? ''] ?? 'this is data is a dummy_please check the actual sheet to make confirmation or ask the admin',
-                    'spv_name'        => (int)$mpList[$nSPV],
-                    'spv_note'        => $row[$headerMap['spv_note'] ?? ''] ?? 'this is data is a dummy_please check the actual sheet to make confirmation or ask the admin',
+                    'fm_name'         => (isset($mpList[$nFM])) ? (int)$mpList[$nFM] : 0,
+                    'fm_note'         => $row[$headerMap['fm_note'] ?? ''] ?? 'no additional note',
+                    'spv_name'        => (isset($mpList[$nSPV])) ? (int)$mpList[$nSPV] : 0,
+                    'spv_note'        => $row[$headerMap['spv_note'] ?? ''] ?? 'no additional note',
                     'hourmeter_start' => (is_numeric($row[$headerMap['hourmeter_start'] ?? ''])) ? (float)$row[$headerMap['hourmeter_start']] : 0,
                     'hourmeter_end'   => (is_numeric($row[$headerMap['hourmeter_end'] ?? ''])) ? (float)$row[$headerMap['hourmeter_end']] : 0,
                     'checking_part'   => (int)$partList[$nPart],

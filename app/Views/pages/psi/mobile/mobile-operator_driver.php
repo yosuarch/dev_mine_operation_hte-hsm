@@ -28,17 +28,20 @@
                 <div class="card-body">
                     <p class="card-text text-muted mb-1"><small>IDENTITY</small></p>
                     <h5 class="card-title">Operator and Driver</h5>
-                    <p class="card-text">Please input your name and employee ID to proceed.</p>
                 </div>
                 <div class="card-body pt-0">
                     <div class="form-floating mb-3">
-                        <input type="text" class="form-control" id="opDrName" placeholder="John Doe" name="opDrName">
-                        <label for="opDrName">Name</label>
+                        <input type="text" class="form-control" id="mpSearch" list="mpListOptions" placeholder="Type name..." autocomplete="off">
+                        <label for="mpSearch">Search Name</label>
+                        <datalist id="mpListOptions"></datalist>
                     </div>
+
                     <div class="form-floating">
-                        <input type="password" class="form-control" id="opDrPass" placeholder="Employee ID" name="opDrPass">
-                        <label for="opDrPass">Employee ID</label>
+                        <input type="text" class="form-control" id="opDrID" name="opDrID" readonly placeholder="Employee ID">
+                        <label for="opDrID">Employee ID</label>
                     </div>
+
+                    <input type="hidden" id="opDrIdx" name="opDrIdx">
                 </div>
             </div>
 
@@ -106,5 +109,6 @@
 <?= $this->endSection(); ?>
 
 <?= $this->section('script'); ?>
-<?= $this->include('pages/psi/mobile/script/script-operator_driver'); ?>
+<script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+<?= $this->include('pages/psi/mobile/script/script-operator_driver_name_id'); ?>
 <?= $this->endSection(); ?>
