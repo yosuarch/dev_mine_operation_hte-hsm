@@ -114,10 +114,10 @@ class PsiRecordValidator extends Migration
         // create insert trigger
         $db->query('
         create trigger after_psi_record_insert
-        after insert on dev_hte.psi_record
+        after insert on psi_record
         for each row
         begin
-        insert into dev_hte.' . $this->table . '
+        insert into ' . $this->table . '
         (`date`, `equipment_id`, `shift`, `operator_name`, `hm_start`, `hm_end`, `checked_part`, `operator_note`, `fm_name`, `fm_note`, `spv_name`, `spv_note`)
         VALUES (NEW.`date`, NEW.equipment_id, NEW.`shift`, NEW.operator_name, NEW.hourmeter_start, NEW.hourmeter_end, NEW.checking_part, NEW.checking_note, NEW.fm_name, NEW.fm_note, NEW.spv_name, NEW.spv_note)
         on duplicate key update
@@ -128,11 +128,11 @@ class PsiRecordValidator extends Migration
         // create update trigger
         $db->query("
         CREATE TRIGGER after_psi_record_update
-        AFTER UPDATE ON dev_hte.psi_record
+        AFTER UPDATE ON psi_record
         FOR EACH ROW
         BEGIN
-        UPDATE dev_hte.{$this->table}
-        SET 
+        UPDATE {$this->table}
+        SET
             `date` = NEW.`date`,
             `equipment_id` = NEW.equipment_id,
             `shift` = NEW.`shift`,
@@ -144,12 +144,12 @@ class PsiRecordValidator extends Migration
             `fm_name` = NEW.fm_name,
             `fm_note` = NEW.fm_note,
             `spv_name` = NEW.spv_name,
-            `spv_note` = NEW.spv_note,
-        WHERE `date` = OLD.`date` 
-          AND `equipment_id` = OLD.equipment_id 
-          AND `shift` = OLD.`shift` 
-          AND `operator_name` = OLD.operator_name 
-          AND `hm_start` = OLD.hourmeter_start 
+            `spv_note` = NEW.spv_note
+        WHERE `date` = OLD.`date`
+          AND `equipment_id` = OLD.equipment_id
+          AND `shift` = OLD.`shift`
+          AND `operator_name` = OLD.operator_name
+          AND `hm_start` = OLD.hourmeter_start
           AND `hm_end` = OLD.hourmeter_end
           AND `checked_part` = OLD.checking_part
           AND `fm_name` = OLD.fm_name
@@ -162,15 +162,15 @@ class PsiRecordValidator extends Migration
         // create delete trigger
         $db->query("
             CREATE TRIGGER after_psi_record_delete
-            AFTER DELETE ON dev_hte.psi_record
+            AFTER DELETE ON psi_record
             FOR EACH ROW
             BEGIN
-                DELETE FROM dev_hte.{$this->table}
-                WHERE `date` = OLD.`date` 
-                AND `equipment_id` = OLD.equipment_id 
-                AND `shift` = OLD.`shift` 
-                AND `operator_name` = OLD.operator_name 
-                AND `hm_start` = OLD.hourmeter_start 
+                DELETE FROM {$this->table}
+                WHERE `date` = OLD.`date`
+                AND `equipment_id` = OLD.equipment_id
+                AND `shift` = OLD.`shift`
+                AND `operator_name` = OLD.operator_name
+                AND `hm_start` = OLD.hourmeter_start
                 AND `hm_end` = OLD.hourmeter_end
                 AND `checked_part` = OLD.checking_part
                 AND `fm_name` = OLD.fm_name

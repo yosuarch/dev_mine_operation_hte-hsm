@@ -26,7 +26,7 @@ class Database extends Config
      */
     public array $default = [
         'DSN'          => '',
-        'hostname'     => 'localhost',
+        'hostname'     => '10.10.3.7',
         'username'     => 'root',
         'password'     => 'mariadb',
         'database'     => '',
@@ -59,7 +59,7 @@ class Database extends Config
 
     public array $session = [
         'DSN'          => '',
-        'hostname'     => 'localhost',
+        'hostname'     => '10.10.3.7',
         'username'     => 'root',
         'password'     => 'mariadb',
         'database'     => '',
