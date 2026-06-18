@@ -8,80 +8,109 @@
     html,
     body {
         overflow: -moz-scrollbars-none;
-        /* Firefox */
         -ms-overflow-style: none;
-        /* IE and Edge */
         scrollbar-width: none;
-        /* Firefox */
         overflow-y: scroll;
-        /* Keeps functionality */
+    }
+
+    .section-label {
+        font-size: 0.7rem;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        color: #6c757d;
+    }
+
+    .card-title-main {
+        font-size: 1.3rem;
+        font-weight: 700;
+    }
+
+    /* Larger touch targets for selects and inputs */
+    .form-control-lg,
+    .form-select-lg {
+        font-size: 1.05rem;
+        min-height: 3.2rem;
+    }
+
+    /* Readonly input: visually distinct but readable */
+    input[readonly] {
+        background-color: #f8f9fa;
+        color: #495057;
     }
 </style>
 <?= $this->endSection(); ?>
 
 <?= $this->section('content'); ?>
-<div class="container-fluid">
-    <div class="row mt-3 p-0 justify-content-center">
-        <div class="col-12 col-md-8 col-lg-5 d-flex flex-column gap-3">
+<div class="container-fluid py-3">
+    <div class="row p-0 justify-content-center">
+        <div class="col-12 col-md-8 col-lg-5 d-flex flex-column gap-4">
 
-            <div class="card p-3">
-                <div class="card-body">
-                    <p class="card-text text-muted mb-1"><small>IDENTITY</small></p>
-                    <h5 class="card-title">Operator and Driver</h5>
-                </div>
-                <div class="card-body pt-0">
-                    <div class="form-floating mb-3">
-                        <input type="text" class="form-control" id="mpSearch" list="mpListOptions" placeholder="Type name..." autocomplete="off">
-                        <label for="mpSearch">Search Name</label>
+            <!-- IDENTITY -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4">
+                    <p class="section-label mb-1">IDENTITY</p>
+                    <h5 class="card-title-main mb-4">Operator and Driver</h5>
+
+                    <div class="mb-4">
+                        <label for="mpSearch" class="form-label fw-semibold fs-6">Full Name</label>
+                        <input type="text" class="form-control form-control-lg" id="mpSearch" list="mpListOptions"
+                            placeholder="Type your name..." autocomplete="off">
                         <datalist id="mpListOptions"></datalist>
                     </div>
 
-                    <div class="form-floating">
-                        <input type="text" class="form-control" id="opDrID" name="opDrID" readonly placeholder="Employee ID">
-                        <label for="opDrID">Employee ID</label>
+                    <div>
+                        <label for="opDrID" class="form-label fw-semibold fs-6">Employee ID</label>
+                        <input type="text" class="form-control form-control-lg" id="opDrID" name="opDrID"
+                            readonly placeholder="Auto-filled after name selection">
                     </div>
 
                     <input type="hidden" id="opDrIdx" name="opDrIdx">
                 </div>
             </div>
 
-            <div class="card p-3">
-                <div class="card-body">
-                    <p class="card-text text-muted mb-2"><small>VEHICLE DETAILS</small></p>
-                    <h5 class="card-title">Equipment Assignment</h5>
-                    <p class="card-text">Enter the equipment or vehicle number for this shift.</p>
-                </div>
-                <div class="card-body pt-0">
-                    <div class="form-floating mb-2">
-                        <select class="form-select" id="equipType" aria-label="Floating label select example" name="equipType">
+            <!-- VEHICLE DETAILS -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4">
+                    <p class="section-label mb-1">VEHICLE DETAILS</p>
+                    <h5 class="card-title-main mb-1">Equipment Assignment</h5>
+                    <p class="text-muted mb-4">Select the equipment you will operate this shift.</p>
+
+                    <div class="mb-4">
+                        <label for="equipType" class="form-label fw-semibold fs-6">Equipment Type</label>
+                        <select class="form-select form-select-lg" id="equipType" name="equipType">
                             <option selected value="">Select Equipment Type</option>
                         </select>
-                        <label for="equipType">Equipment Type</label>
                     </div>
-                    <div class="form-floating mb-2">
-                        <select class="form-select" id="equipID" aria-label="Floating label select example" name="equipID">
+
+                    <div>
+                        <label for="equipID" class="form-label fw-semibold fs-6">Equipment ID</label>
+                        <select class="form-select form-select-lg" id="equipID" name="equipID">
                             <option value="">Select Equipment ID</option>
                         </select>
-                        <label for="equipID">Equipment ID</label>
                     </div>
                 </div>
             </div>
 
-            <div class="card p-3">
-                <div class="card-body">
-                    <p class="card-text text-muted mb-1"><small>PRE-START INSPECTION</small></p>
-                    <h5 class="card-title">P2H</h5>
-                    <p class="card-text">Perform the unit inspection and make a record</p>
+            <!-- P2H CHECKLIST -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4 pb-2">
+                    <p class="section-label mb-1">PRE-START INSPECTION</p>
+                    <h5 class="card-title-main mb-1">P2H Checklist</h5>
+                    <p class="text-muted mb-0">Inspect each item and mark its condition.</p>
                 </div>
-                <div class="card-body pt-0" id="psiFormItems">
-                    <p class="text-muted mb-0"><small>Select an equipment to load the inspection checklist.</small></p>
+                <div class="card-body px-4 pb-4 pt-3" id="psiFormItems">
+                    <p class="text-muted mb-0">Select an equipment above to load the checklist.</p>
                 </div>
             </div>
 
-            <div class="card p-3">
-                <div class="card-body text-center">
-                    <h5 class="card-title mb-3">Ready to Start Shift?</h5>
-                    <button type="submit" class="btn btn-primary w-100 py-2">Submit and Proceed</button>
+            <!-- SUBMIT -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4 text-center">
+                    <h5 class="card-title-main mb-1">Ready to Start Shift?</h5>
+                    <p class="text-muted mb-4">Make sure all items above are completed.</p>
+                    <button type="submit" class="btn btn-primary btn-lg w-100 py-3 fw-bold fs-5">
+                        Submit and Proceed
+                    </button>
                 </div>
             </div>
 
