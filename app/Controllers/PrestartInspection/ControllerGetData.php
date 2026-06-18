@@ -42,13 +42,6 @@ class ControllerGetData extends BaseController
 
     public function fetchMPList()
     {
-
-        // 1. Turn off the debug toolbar so it doesn't break the JSON
-        // if (ENVIRONMENT !== 'production') {
-        //     \Config\Services::toolbar()->;
-        // }
-
-        // fetch Manpower name and id
         $db = Database::connect();
 
         // table name
@@ -82,11 +75,27 @@ class ControllerGetData extends BaseController
         $typeIdx = $this->request->getGet('type_idx');
 
         $builder = $db->table('view_equipment_id_list')
-            ->select('idx, equipment_id')
+            ->select('idx, equipment_id, where_index')
             ->orderBy('equipment_id', 'ASC');
 
         if ($typeIdx !== null && $typeIdx !== '') {
-            $builder->where('abbreviation', (int) $typeIdx);
+            $builder->where('where_index', (int) $typeIdx);
+        }
+
+        return $this->response->setJSON($builder->get()->getResultArray());
+    }
+
+    public function getEmptyPSIForm()
+    {
+        $db = Database::connect();
+
+        $equipIdx = $this->request->getGet('equip_idx');
+
+        $builder = $db->table('view_psi_empty_from')
+            ->select('idx, int_type, text_type, check_part, hazard_code, hazard_code_description, spot_position');
+
+        if ($equipIdx !== null && $equipIdx !== '') {
+            $builder->where('int_type', (int) $equipIdx);
         }
 
         return $this->response->setJSON($builder->get()->getResultArray());

@@ -73,15 +73,8 @@
                     <h5 class="card-title">P2H</h5>
                     <p class="card-text">Perform the unit inspection and make a record</p>
                 </div>
-                <div class="card-body pt-0">
-                    <div class="form-floating mb-3">
-                        <input type="text" class="form-control" id="opDrName" placeholder="John Doe" name="opDrName">
-                        <label for="opDrName">Name</label>
-                    </div>
-                    <div class="form-floating">
-                        <input type="password" class="form-control" id="opDrPass" placeholder="Employee ID" name="opDrPass">
-                        <label for="opDrPass">Employee ID</label>
-                    </div>
+                <div class="card-body pt-0" id="psiFormItems">
+                    <p class="text-muted mb-0"><small>Select an equipment to load the inspection checklist.</small></p>
                 </div>
             </div>
 
@@ -102,4 +95,5 @@
 <?= $this->include('pages/psi/mobile/script/script-operator_driver_name_id'); ?>
 <?= $this->include('pages/psi/mobile/script/script-equipment_type_unique'); ?>
 <?= $this->include('pages/psi/mobile/script/script-equipment_id'); ?>
+<?= $this->include('pages/psi/mobile/script/script-psi_form'); ?>
 <?= $this->endSection(); ?>

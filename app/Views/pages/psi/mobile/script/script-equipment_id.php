@@ -19,7 +19,7 @@
                 success: function(response) {
                     let options = '<option value="">Select Equipment ID</option>';
                     response.forEach(function(item) {
-                        options += `<option value="${item.idx}">${item.equipment_id}</option>`;
+                        options += `<option value="${item.idx}" data-where-index="${item.where_index}">${item.equipment_id}</option>`;
                     });
                     $equipID.html(options).prop('disabled', false);
                 },
