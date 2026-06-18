@@ -1,5 +1,16 @@
 <script>
     $(document).ready(function() {
+
+        $(document).on('change', '[id^="bad-"]', function() {
+            const idx = this.id.replace('bad-', '');
+            $('#note-wrap-' + idx).show();
+        });
+
+        $(document).on('change', '[id^="good-"]', function() {
+            const idx = this.id.replace('good-', '');
+            $('#note-wrap-' + idx).hide().find('input').val('');
+        });
+
         $('#equipID').on('change', function() {
             const equipIdx = $(this).val();
             const whereIndex = $(this).find('option:selected').data('where-index');
@@ -56,6 +67,9 @@
                                         </div>
                                     </div>
                                     <small class="text-muted mt-1">${item.hazard_code} &mdash; ${item.hazard_code_description}</small>
+                                    <div id="note-wrap-${item.idx}" class="mt-2" style="display:none;">
+                                        <input type="text" class="form-control form-control-sm" id="note-${item.idx}" name="psi-note-${item.idx}" placeholder="Describe the issue...">
+                                    </div>
                                 </div>`;
                         });
                     });
