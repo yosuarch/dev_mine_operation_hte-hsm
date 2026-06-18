@@ -60,4 +60,35 @@ class ControllerGetData extends BaseController
 
         return $this->response->setJSON($mpList);
     }
+
+    public function getUniqueEquipmentType()
+    {
+        // connect to database
+        $db = Database::connect();
+
+        // fetch data from database
+        $equipType = $db->table('view_unique_equipment_type')
+            ->get()
+            ->getResultArray();
+
+        // return the result as json for frontend
+        return $this->response->setJSON($equipType);
+    }
+
+    public function getEquipmentID()
+    {
+        $db = Database::connect();
+
+        $typeIdx = $this->request->getGet('type_idx');
+
+        $builder = $db->table('view_equipment_id_list')
+            ->select('idx, equipment_id')
+            ->orderBy('equipment_id', 'ASC');
+
+        if ($typeIdx !== null && $typeIdx !== '') {
+            $builder->where('abbreviation', (int) $typeIdx);
+        }
+
+        return $this->response->setJSON($builder->get()->getResultArray());
+    }
 }

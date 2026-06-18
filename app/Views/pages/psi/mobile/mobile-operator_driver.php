@@ -54,24 +54,13 @@
                 <div class="card-body pt-0">
                     <div class="form-floating mb-2">
                         <select class="form-select" id="equipType" aria-label="Floating label select example" name="equipType">
-                            <option selected>Select Equipment Type</option>
-                            <option value="1">Excavator</option>
-                            <option value="2">ADT</option>
-                            <option value="3">Dumptruck</option>
-                            <option value="4">Motor Grader</option>
-                            <option value="5">Compactor</option>
-                            <option value="6">Water Truck</option>
-                            <option value="7">Wheel Loader</option>
+                            <option selected value="">Select Equipment Type</option>
                         </select>
                         <label for="equipType">Equipment Type</label>
                     </div>
                     <div class="form-floating mb-2">
                         <select class="form-select" id="equipID" aria-label="Floating label select example" name="equipID">
-                            <option selected>Select Equipment ID</option>
-                            <option value="1">HAVV0001</option>
-                            <option value="2">HAVV0002</option>
-                            <option value="3">HEXC0001</option>
-                            <option value="4">HEXK0001</option>
+                            <option value="">Select Equipment ID</option>
                         </select>
                         <label for="equipID">Equipment ID</label>
                     </div>
@@ -111,4 +100,6 @@
 <?= $this->section('script'); ?>
 <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
 <?= $this->include('pages/psi/mobile/script/script-operator_driver_name_id'); ?>
+<?= $this->include('pages/psi/mobile/script/script-equipment_type_unique'); ?>
+<?= $this->include('pages/psi/mobile/script/script-equipment_id'); ?>
 <?= $this->endSection(); ?>

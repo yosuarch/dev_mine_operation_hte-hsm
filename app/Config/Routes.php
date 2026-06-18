@@ -10,6 +10,8 @@ $routes->get('/', 'ControllerLandingPage::index');
 $routes->get('/landing', 'ControllerLandingPage::index');
 $routes->get('/operator-driver', 'PrestartInspection\Mobile\ControllerOperatorDriver::index');
 $routes->get('/operator-driver/operator-driver-name-id', 'PrestartInspection\ControllerGetData::fetchMPList');
+$routes->get('/operator-driver/unique-equipment-type', 'PrestartInspection\ControllerGetData::getUniqueEquipmentType');
+$routes->get('/operator-driver/equipment-id', 'PrestartInspection\ControllerGetData::getEquipmentID');
 // 2. PROTECTED ROUTES (Requires Login)
 // Use Shield's native 'session' filter instead of a custom one
 $routes->group('', ['filter' => 'session'], function ($routes) {
