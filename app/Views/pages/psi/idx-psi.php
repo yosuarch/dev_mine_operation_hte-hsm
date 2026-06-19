@@ -1,8 +1,6 @@
 <?= $this->extend('layouts/main_layout') ?>
 
 <?= $this->section('pageStyles'); ?>
-<!-- Font Awesome -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <!-- DataTables Bootstrap5 CSS -->
 <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
 <!-- DataTables Responsive CSS -->

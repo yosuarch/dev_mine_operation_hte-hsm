@@ -3,7 +3,12 @@
         $('#prestartInspectionTable').DataTable({
             processing: true,
             serverSide: true,
-            responsive: true,
+            responsive: {
+                details: {
+                    type: 'inline',
+                    target: 'tr'
+                }
+            },
             ajax: '/ajax-datatable/prestartrecord',
             columns: [
                 { data: '0' },
