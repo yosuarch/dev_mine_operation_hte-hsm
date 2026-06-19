@@ -1,6 +1,17 @@
 <?= $this->extend('layouts/landing_page') ?>
 
 <?= $this->section('link'); ?>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<script>
+    // Pre-paint: apply stored color mode before CSS renders to prevent flash
+    (function() {
+        var m = localStorage.getItem('mine_ops_color_mode') || 'system';
+        var d = document.documentElement;
+        if (m === 'dark') d.setAttribute('data-bs-theme', 'dark');
+        else if (m === 'light') d.setAttribute('data-bs-theme', 'light');
+        else d.setAttribute('data-bs-theme', window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    })();
+</script>
 <?= $this->endSection(); ?>
 
 <?= $this->section('pageStyles'); ?>
@@ -13,11 +24,22 @@
         overflow-y: scroll;
     }
 
+    /* ── Top bar ─────────────────────────────────────────── */
+    .page-top-bar {
+        height: 48px;
+        position: sticky;
+        top: 0;
+        z-index: 30;
+        background: var(--bs-body-bg);
+        border-bottom: 1px solid var(--bs-border-color-translucent);
+    }
+
+    /* ── Typography ──────────────────────────────────────── */
     .section-label {
         font-size: 0.7rem;
         font-weight: 700;
         letter-spacing: 0.12em;
-        color: #6c757d;
+        color: var(--bs-secondary-color);
     }
 
     .card-title-main {
@@ -25,22 +47,81 @@
         font-weight: 700;
     }
 
-    /* Larger touch targets for selects and inputs */
+    /* ── Inputs ──────────────────────────────────────────── */
     .form-control-lg,
     .form-select-lg {
         font-size: 1.05rem;
         min-height: 3.2rem;
     }
 
-    /* Readonly input: visually distinct but readable */
     input[readonly] {
-        background-color: #f8f9fa;
-        color: #495057;
+        background-color: var(--bs-secondary-bg);
+        color: var(--bs-body-color);
+    }
+
+    /* ── P2H checklist item cards ────────────────────────── */
+    .psi-item-card {
+        transition: background-color 0.25s ease, box-shadow 0.25s ease;
+        background: var(--bs-body-bg);
+    }
+
+    .psi-item-card.state-normal {
+        background-color: rgba(25, 135, 84, 0.06) !important;
+    }
+
+    .psi-item-card.state-abnormal {
+        background-color: rgba(220, 53, 69, 0.09) !important;
+    }
+
+    [data-bs-theme="dark"] .psi-item-card.state-normal {
+        background-color: rgba(25, 135, 84, 0.14) !important;
+    }
+
+    [data-bs-theme="dark"] .psi-item-card.state-abnormal {
+        background-color: rgba(220, 53, 69, 0.17) !important;
+    }
+
+    /* ── Fixed bottom progress bar ───────────────────────── */
+    .psi-progress-fixed {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        z-index: 100;
+        background: var(--bs-body-bg);
+        border-top: 1px solid var(--bs-border-color-translucent);
+        padding: 10px 16px 14px;
+        box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.08);
+    }
+
+    [data-bs-theme="dark"] .psi-progress-fixed {
+        box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Push content above the fixed bar so submit button isn't hidden */
+    .psi-bottom-spacer {
+        height: 72px;
     }
 </style>
 <?= $this->endSection(); ?>
 
 <?= $this->section('content'); ?>
+
+<?= csrf_field() ?>
+
+<!-- Top Bar -->
+<div class="page-top-bar d-flex align-items-center justify-content-between px-3 px-md-4">
+    <span class="fw-bold" style="font-size:0.85rem;letter-spacing:0.06em;color:var(--bs-body-color);">
+        MINE-OPS &middot; <span class="text-primary">P2H Form</span>
+    </span>
+    <button type="button" id="themeToggleBtn"
+        class="btn btn-sm rounded-circle d-flex align-items-center justify-content-center"
+        style="width:36px;height:36px;background:var(--bs-secondary-bg);color:var(--bs-body-color);border:1px solid var(--bs-border-color-translucent);"
+        title="Follow system" aria-label="Follow system">
+        <i id="themeToggleIcon" class="fas fa-circle-half-stroke" style="font-size:0.9rem;pointer-events:none;"></i>
+    </button>
+</div>
+
 <div class="container-fluid py-3">
     <div class="row p-0 justify-content-center">
         <div class="col-12 col-md-8 col-lg-5 d-flex flex-column gap-4">
@@ -56,6 +137,7 @@
                         <input type="text" class="form-control form-control-lg" id="mpSearch" list="mpListOptions"
                             placeholder="Type your name..." autocomplete="off">
                         <datalist id="mpListOptions"></datalist>
+                        <div class="invalid-feedback">Please select a valid operator / driver name.</div>
                     </div>
 
                     <div>
@@ -73,7 +155,7 @@
                 <div class="card-body p-4">
                     <p class="section-label mb-1">VEHICLE DETAILS</p>
                     <h5 class="card-title-main mb-1">Equipment Assignment</h5>
-                    <p class="text-muted mb-4">Select the equipment you will operate this shift.</p>
+                    <p class="text-muted mb-4" style="font-size:0.9rem;">Select the equipment you will operate this shift.</p>
 
                     <div class="mb-4">
                         <label for="equipType" class="form-label fw-semibold fs-6">Equipment Type</label>
@@ -87,6 +169,7 @@
                         <select class="form-select form-select-lg" id="equipID" name="equipID">
                             <option value="">Select Equipment ID</option>
                         </select>
+                        <div class="invalid-feedback">Please select an equipment to load the checklist.</div>
                     </div>
                 </div>
             </div>
@@ -96,10 +179,13 @@
                 <div class="card-body p-4 pb-2">
                     <p class="section-label mb-1">PRE-START INSPECTION</p>
                     <h5 class="card-title-main mb-1">P2H Checklist</h5>
-                    <p class="text-muted mb-0">Inspect each item and mark its condition.</p>
+                    <p class="text-muted mb-0" style="font-size:0.9rem;">
+                        Inspect each item and mark its condition.
+                        Items marked <strong>Not-Normal</strong> require a written note.
+                    </p>
                 </div>
-                <div class="card-body px-4 pb-4 pt-3" id="psiFormItems">
-                    <p class="text-muted mb-0">Select an equipment above to load the checklist.</p>
+                <div class="card-body px-3 pb-4 pt-2" id="psiFormItems">
+                    <p class="text-muted mb-0 small">Select an equipment above to load the checklist.</p>
                 </div>
             </div>
 
@@ -107,16 +193,63 @@
             <div class="card border-0 shadow-sm">
                 <div class="card-body p-4 text-center">
                     <h5 class="card-title-main mb-1">Ready to Start Shift?</h5>
-                    <p class="text-muted mb-4">Make sure all items above are completed.</p>
-                    <button type="submit" class="btn btn-primary btn-lg w-100 py-3 fw-bold fs-5">
+                    <p class="text-muted mb-4" style="font-size:0.9rem;">
+                        Make sure all checklist items are reviewed before submitting.
+                    </p>
+                    <button type="button" id="btnSubmitPSI" class="btn btn-primary btn-lg w-100 py-3 fw-bold fs-5">
                         Submit and Proceed
                     </button>
                 </div>
             </div>
 
+            <!-- Spacer so submit card isn't hidden behind the fixed progress bar -->
+            <div class="psi-bottom-spacer"></div>
+
         </div>
     </div>
 </div>
+
+<!-- Fixed Bottom Progress Bar (appears after checklist loads) -->
+<div id="psiProgressWrap" class="psi-progress-fixed" style="display:none;">
+    <div class="d-flex justify-content-between align-items-center mb-1">
+        <span class="section-label mb-0">P2H PROGRESS</span>
+        <span id="psiProgressLabel" class="fw-bold" style="font-size:0.78rem;color:var(--bs-body-color);">
+            0 / 0 reviewed
+        </span>
+    </div>
+    <div class="progress rounded-pill" style="height:6px;">
+        <div id="psiProgressBar" class="progress-bar bg-primary" role="progressbar"
+            style="width:0%;transition:width 0.4s ease;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+        </div>
+    </div>
+</div>
+
+<!-- Summary Modal -->
+<div class="modal fade" id="summaryModal" tabindex="-1" aria-labelledby="summaryModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header border-0 pb-0">
+                <div>
+                    <p class="section-label mb-0">REVIEW BEFORE SUBMITTING</p>
+                    <h5 class="modal-title fw-bold" id="summaryModalLabel">Submission Summary</h5>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body pt-3" id="summaryBody">
+                <!-- filled dynamically by script-submit.php -->
+            </div>
+            <div class="modal-footer border-0 pt-0 gap-2">
+                <button type="button" class="btn btn-outline-secondary flex-fill" data-bs-dismiss="modal">
+                    Back to Edit
+                </button>
+                <button type="button" id="btnConfirmSubmit" class="btn btn-primary flex-fill fw-bold">
+                    Confirm &amp; Submit
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <?= $this->endSection(); ?>
 
 <?= $this->section('script'); ?>
@@ -125,4 +258,6 @@
 <?= $this->include('pages/psi/mobile/script/script-equipment_type_unique'); ?>
 <?= $this->include('pages/psi/mobile/script/script-equipment_id'); ?>
 <?= $this->include('pages/psi/mobile/script/script-psi_form'); ?>
+<?= $this->include('pages/psi/mobile/script/script-submit'); ?>
+<?= $this->include('pages/psi/mobile/script/script-color-mode'); ?>
 <?= $this->endSection(); ?>
