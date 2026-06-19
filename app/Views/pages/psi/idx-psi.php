@@ -1,10 +1,12 @@
 <?= $this->extend('layouts/main_layout') ?>
 
 <?= $this->section('pageStyles'); ?>
+<!-- Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <!-- DataTables Bootstrap5 CSS -->
 <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
-<!-- DataTables CSS -->
-<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+<!-- DataTables Responsive CSS -->
+<link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.bootstrap5.min.css">
 <!-- date range picker -->
 <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
 <?= $this->endSection(); ?>
@@ -35,8 +37,9 @@
             </div>
         </div>
         <div class="col-lg-6">
-            <!-- per-equipment type -->
-            <?= $this->include('pages/psi/tabel-by-equipment-type'); ?>
+            <div class="table-responsive">
+                <?= $this->include('pages/psi/tabel-by-equipment-type'); ?>
+            </div>
         </div>
     </div>
     <h3>Daily Pre-Start Inspection (P2H) Record</h3>
@@ -56,12 +59,13 @@
 <?= $this->section('main-js'); ?>
 <!-- jQuery -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<!-- bootstrap js -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
 <!-- DataTables Core JS -->
 <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
 <!-- DataTables Bootstrap5 JS -->
 <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+<!-- DataTables Responsive JS -->
+<script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
+<script src="https://cdn.datatables.net/responsive/2.5.0/js/responsive.bootstrap5.min.js"></script>
 <!-- chart.js -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <?= $this->endSection(); ?>
@@ -70,7 +74,7 @@
 <!-- moment.js -->
 <script src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
 <!-- daterange picker -->
-<script src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>pt>
+<script src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
 <?= $this->include('pages/psi/script-chart-one-tabel'); ?>
 <?= $this->include('pages/psi/script-prestart-recorded-tabel'); ?>
 <?= $this->include('pages/psi/script-preview-tabel'); ?>

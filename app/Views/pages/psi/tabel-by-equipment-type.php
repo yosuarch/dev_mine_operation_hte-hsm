@@ -1,4 +1,4 @@
-        <table id="byEquipmentType" class="table table-striped">
+        <table id="byEquipmentType" class="table table-striped table-bordered table-sm table-hover">
             <thead>
                 <tr>
                     <th>Equipment</th>

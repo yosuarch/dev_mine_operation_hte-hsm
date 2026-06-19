@@ -1,21 +1,22 @@
 <?= $this->extend('layouts/main_layout') ?>
 
 <?= $this->section('pageStyles'); ?>
+<!-- Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <!-- DataTables Bootstrap5 CSS -->
 <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
-<!-- DataTables CSS -->
-<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
-<!-- date range picker -->
-<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
+<!-- DataTables Responsive CSS -->
+<link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.bootstrap5.min.css">
+<!-- DataTables Buttons CSS -->
+<link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.1/css/buttons.bootstrap5.min.css">
 <?= $this->endSection(); ?>
 
 <?= $this->section('content'); ?>
-<!-- body -->
-<div class="col-lg-8">
-    <table id="manPowerListTable" class="table table-striped table-hover">
+<div class="table-responsive">
+    <table id="manPowerListTable" class="table table-striped table-hover table-bordered w-100">
         <thead>
             <tr>
-                <th>Number</th>
+                <th>#</th>
                 <th>Name</th>
                 <th>Employee ID</th>
                 <th>Gender</th>
@@ -23,9 +24,7 @@
                 <th>Actions</th>
             </tr>
         </thead>
-        <tbody>
-            <!-- body from json -->
-        </tbody>
+        <tbody></tbody>
     </table>
 </div>
 <?= $this->endSection(); ?>
@@ -33,17 +32,19 @@
 <?= $this->section('main-js'); ?>
 <!-- jQuery -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<!-- bootstrap js -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
 <!-- DataTables Core JS -->
 <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
 <!-- DataTables Bootstrap5 JS -->
 <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+<!-- DataTables Responsive JS -->
+<script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
+<script src="https://cdn.datatables.net/responsive/2.5.0/js/responsive.bootstrap5.min.js"></script>
 <?= $this->endSection(); ?>
 
 <?= $this->section('script'); ?>
 <!-- DataTables Buttons JS -->
 <script src="https://cdn.datatables.net/buttons/2.4.1/js/dataTables.buttons.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.bootstrap5.min.js"></script>
 <!-- JSZip for Excel export -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <!-- PDFMake for PDF export -->
@@ -51,10 +52,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.0/vfs_fonts.min.js"></script>
 <!-- DataTables Button HTML5 export -->
 <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.html5.min.js"></script>
-<!-- DataTables Responsive JS -->
-<!-- <script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script> -->
 
-<!-- javascript -->
 <script>
     $(document).ready(function() {
         $('#manPowerListTable').DataTable({
@@ -62,51 +60,18 @@
             serverSide: true,
             responsive: true,
             ajax: '/ajax-datatable/manpowerlist',
-            columnDefs: [{
-                    targets: 0,
-                    width: '10%'
-                },
+            dom:
+                "<'row align-items-center mb-2'" +
+                    "<'col-12 col-sm-6'B>" +
+                    "<'col-12 col-sm-6 mt-2 mt-sm-0'f>" +
+                ">" +
+                "<'row'<'col-sm-12'tr>>" +
+                "<'row align-items-center mt-2'" +
+                    "<'col-12 col-sm-5'i>" +
+                    "<'col-12 col-sm-7 mt-2 mt-sm-0'p>" +
+                ">",
+            buttons: [
                 {
-                    targets: 1,
-                    width: '25%'
-                },
-                {
-                    targets: 2,
-                    width: '25%'
-                },
-                {
-                    targets: 3,
-                    width: '15%'
-                },
-                {
-                    targets: 4,
-                    width: '25%'
-                },
-                {
-                    targets: 5,
-                    width: '25%',
-                    orderable: false,
-                    searchable: false,
-                    data: null,
-                    render: function(data, type, row) {
-                        if (type !== 'display') return '';
-                        return `
-                            <button class="btn btn-sm btn-info" onclick="viewManpower(${row.idx})">
-                                <i class="fas fa-eye"></i> View
-                            </button>
-                            <button class="btn btn-sm btn-warning" onclick="editManpower(${row.idx})">
-                                <i class="fas fa-edit"></i> Edit
-                            </button>
-                            <button class="btn btn-sm btn-danger" onclick="deleteManpower(${row.idx})">
-                                <i class="fas fa-trash"></i> Delete
-                            </button>
-                        `;
-                    },
-
-                }
-            ],
-            dom: 'Bfrtip',
-            buttons: [{
                     extend: 'csv',
                     text: '<i class="fas fa-file-csv"></i> CSV',
                     className: 'btn btn-secondary btn-sm',
@@ -124,26 +89,52 @@
                     className: 'btn btn-danger btn-sm',
                     title: 'Manpower List'
                 }
+            ],
+            columnDefs: [
+                { targets: 0, width: '5%',  responsivePriority: 3 },
+                { targets: 1, width: '28%', responsivePriority: 1 },
+                { targets: 2, width: '20%', responsivePriority: 2 },
+                { targets: 3, width: '10%', responsivePriority: 5 },
+                { targets: 4, width: '22%', responsivePriority: 4 },
+                {
+                    targets: 5,
+                    width: '15%',
+                    responsivePriority: 1,
+                    orderable: false,
+                    searchable: false,
+                    data: null,
+                    render: function(data, type, row) {
+                        if (type !== 'display') return '';
+                        return `
+                            <div class="btn-group btn-group-sm" role="group">
+                                <button class="btn btn-info" onclick="viewManpower(${row.idx})" title="View">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button class="btn btn-warning" onclick="editManpower(${row.idx})" title="Edit">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn btn-danger" onclick="deleteManpower(${row.idx})" title="Delete">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        `;
+                    }
+                }
             ]
         });
     });
 
-    // Action functions
-
     function viewManpower(idx) {
         alert('View manpower: ' + idx);
-        // TODO: Implement view modal
     }
 
     function editManpower(idx) {
         alert('Edit manpower: ' + idx);
-        // TODO: Implement edit modal
     }
 
     function deleteManpower(idx) {
         if (confirm('Are you sure you want to delete this record?')) {
             alert('Delete manpower: ' + idx);
-            // TODO: Implement delete via AJAX
         }
     }
 </script>
