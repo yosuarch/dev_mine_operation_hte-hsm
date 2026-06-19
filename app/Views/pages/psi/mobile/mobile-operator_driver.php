@@ -108,6 +108,10 @@
 <?= $this->section('content'); ?>
 
 <?= csrf_field() ?>
+<script>
+    const _SERVER_DATE = '<?= (new DateTime('now', new DateTimeZone('Asia/Jayapura')))->format('Y-m-d') ?>';
+    const _SERVER_HOUR = <?= (new DateTime('now', new DateTimeZone('Asia/Jayapura')))->format('G') ?>;
+</script>
 
 <!-- Top Bar -->
 <div class="page-top-bar d-flex align-items-center justify-content-between px-3 px-md-4">
@@ -150,8 +154,57 @@
                 </div>
             </div>
 
+            <!-- OPEN SHIFT SECTION (shown when Redis session detected) -->
+            <div id="openShiftSection" style="display:none;">
+
+                <!-- Equipment picker — shown when operator has 2+ open shifts -->
+                <div id="openShiftPicker" class="card border-0 shadow-sm" style="display:none;">
+                    <div class="card-body p-4">
+                        <p class="section-label mb-1">OPEN SHIFTS</p>
+                        <h5 class="card-title-main mb-1">Select Equipment to Close</h5>
+                        <p class="text-muted mb-4" style="font-size:0.9rem;">
+                            You have multiple open shifts. Pick the equipment you finished using.
+                        </p>
+                        <div id="openShiftPickerList" class="d-flex flex-column gap-2"></div>
+                    </div>
+                </div>
+
+                <!-- HM End form — shown once equipment is determined -->
+                <div id="openShiftHmForm" class="card border-0 shadow-sm" style="display:none;">
+                    <div class="card-body p-4">
+                        <p class="section-label mb-1">END OF SHIFT</p>
+                        <h5 class="card-title-main mb-3">Close Your Shift</h5>
+
+                        <!-- Read-only session summary -->
+                        <div id="openShiftSummary" class="mb-4 p-3 rounded-3"
+                             style="background:var(--bs-secondary-bg);font-size:0.9rem;"></div>
+
+                        <div class="mb-4">
+                            <label for="hmEndInput" class="form-label fw-semibold fs-6">Hour-Meter End</label>
+                            <input type="number" id="hmEndInput" class="form-control form-control-lg"
+                                   min="0" step="0.1" placeholder="e.g. 4789.0">
+                            <div class="invalid-feedback">Must be greater than the starting hour-meter.</div>
+                        </div>
+
+                        <button type="button" id="btnSubmitHmEnd"
+                                class="btn btn-success btn-lg w-100 py-3 fw-bold fs-5">
+                            Close Shift
+                        </button>
+                        <div id="hmEndError" class="alert alert-danger mt-3 d-none small mb-0"></div>
+                    </div>
+                </div>
+
+                <!-- Escape hatch -->
+                <div class="text-center">
+                    <button type="button" id="btnStartNewPsiInstead"
+                            class="btn btn-link text-secondary small">
+                        Start a new P2H instead
+                    </button>
+                </div>
+            </div>
+
             <!-- VEHICLE DETAILS -->
-            <div class="card border-0 shadow-sm">
+            <div id="vehicleCard" class="card border-0 shadow-sm">
                 <div class="card-body p-4">
                     <p class="section-label mb-1">VEHICLE DETAILS</p>
                     <h5 class="card-title-main mb-1">Equipment Assignment</h5>
@@ -175,7 +228,7 @@
             </div>
 
             <!-- P2H CHECKLIST -->
-            <div class="card border-0 shadow-sm">
+            <div id="checklistCard" class="card border-0 shadow-sm">
                 <div class="card-body p-4 pb-2">
                     <p class="section-label mb-1">PRE-START INSPECTION</p>
                     <h5 class="card-title-main mb-1">P2H Checklist</h5>
@@ -190,7 +243,7 @@
             </div>
 
             <!-- SUBMIT -->
-            <div class="card border-0 shadow-sm">
+            <div id="submitCard" class="card border-0 shadow-sm">
                 <div class="card-body p-4 text-center">
                     <h5 class="card-title-main mb-1">Ready to Start Shift?</h5>
                     <p class="text-muted mb-4" style="font-size:0.9rem;">
@@ -235,8 +288,43 @@
                 </div>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body pt-3" id="summaryBody">
-                <!-- filled dynamically by script-submit.php -->
+            <div class="modal-body pt-3">
+
+                <!-- SHIFT DETAILS — auto-populated by JS, user can override -->
+                <div class="mb-4 pb-4 border-bottom">
+                    <p class="section-label mb-3">SHIFT DETAILS</p>
+                    <div class="mb-3">
+                        <label for="psiDate" class="form-label fw-semibold">Date</label>
+                        <input type="date" id="psiDate" class="form-control form-control-lg">
+                        <div class="invalid-feedback">Date is required.</div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Shift</label>
+                        <div class="d-flex gap-2">
+                            <input type="radio" class="btn-check" name="psiShift" id="shiftDay" value="1" autocomplete="off">
+                            <label class="btn btn-outline-warning flex-fill py-3" for="shiftDay">
+                                <i class="fas fa-sun me-2"></i>Day
+                            </label>
+                            <input type="radio" class="btn-check" name="psiShift" id="shiftNight" value="2" autocomplete="off">
+                            <label class="btn btn-outline-primary flex-fill py-3" for="shiftNight">
+                                <i class="fas fa-moon me-2"></i>Night
+                            </label>
+                        </div>
+                        <div class="text-danger small mt-1 d-none" id="shiftRequiredMsg">Please select a shift.</div>
+                    </div>
+                    <div>
+                        <label for="psiHourMeter" class="form-label fw-semibold">Hour-Meter Start</label>
+                        <input type="number" id="psiHourMeter" class="form-control form-control-lg"
+                               min="0" step="0.1" placeholder="e.g. 4521.5">
+                        <div class="invalid-feedback">Please enter the hour-meter start reading.</div>
+                    </div>
+                </div>
+
+                <!-- DYNAMIC SUMMARY (operator, equipment, checklist) -->
+                <div id="summaryBody">
+                    <!-- filled dynamically by script-submit.php -->
+                </div>
+
             </div>
             <div class="modal-footer border-0 pt-0 gap-2">
                 <button type="button" class="btn btn-outline-secondary flex-fill" data-bs-dismiss="modal">
@@ -259,5 +347,6 @@
 <?= $this->include('pages/psi/mobile/script/script-equipment_id'); ?>
 <?= $this->include('pages/psi/mobile/script/script-psi_form'); ?>
 <?= $this->include('pages/psi/mobile/script/script-submit'); ?>
+<?= $this->include('pages/psi/mobile/script/script-hm-end'); ?>
 <?= $this->include('pages/psi/mobile/script/script-color-mode'); ?>
 <?= $this->endSection(); ?>

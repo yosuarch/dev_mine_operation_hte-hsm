@@ -29,11 +29,11 @@ class PsiRecordValidatorSign extends Migration
             'validator_sub_dept_role' => [
                 'type' => 'int',
                 'constraint' => '3',
-                'null' => true,
+                'null' => false,
             ],
             'validator_signature' => [
                 'type' => 'mediumblob',
-                'null' => false,
+                'null' => true,
             ],
             'created_at' => [
                 'type' => 'timestamp',

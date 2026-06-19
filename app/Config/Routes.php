@@ -13,6 +13,9 @@ $routes->get('/operator-driver/operator-driver-name-id', 'PrestartInspection\Con
 $routes->get('/operator-driver/unique-equipment-type', 'PrestartInspection\ControllerGetData::getUniqueEquipmentType');
 $routes->get('/operator-driver/equipment-id', 'PrestartInspection\ControllerGetData::getEquipmentID');
 $routes->get('/operator-driver/psi-fetch-form', 'PrestartInspection\ControllerGetData::getEmptyPSIForm');
+$routes->post('/operator-driver/submit-psi', 'PrestartInspection\Mobile\ControllerOperatorDriver::submitPSI');
+$routes->get('/operator-driver/check-open-shift', 'PrestartInspection\Mobile\ControllerOperatorDriver::checkOpenShift');
+$routes->post('/operator-driver/submit-hm-end', 'PrestartInspection\Mobile\ControllerOperatorDriver::submitHmEnd');
 // 2. PROTECTED ROUTES (Requires Login)
 // Use Shield's native 'session' filter instead of a custom one
 $routes->group('', function ($routes) {

@@ -27,6 +27,12 @@ class EquipmentUniqueType extends Migration
                 'null' => false,
                 'comment' => 'unique equipment type',
             ],
+            'abbreviation' => [
+                'type' => 'varchar',
+                'constraint' => 64,
+                'null' => true,
+                'comment' => 'the abbreviation of the type',
+            ],
         ]);
 
 

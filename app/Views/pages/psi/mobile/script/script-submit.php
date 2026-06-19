@@ -1,10 +1,11 @@
 <script>
     $(document).ready(function() {
 
+        // ── Submit button: validate P2H form → open summary modal ────────
         $('#btnSubmitPSI').on('click', function() {
-            // Clear previous error states
+
+            // 1. Clear previous error states
             $('.is-invalid').removeClass('is-invalid');
-            // Reset any "Required" warning badges from previous submit attempt
             $('.badge.text-bg-warning[id^="status-"]')
                 .attr('class', 'position-absolute top-0 end-0 mt-2 me-2 badge rounded-pill')
                 .attr('style', 'font-size:0.6rem;background:var(--bs-secondary-bg);color:var(--bs-secondary-color);')
@@ -12,25 +13,25 @@
 
             let valid = true;
 
-            // Validate: operator selected
-            const opDrIdx = $('#opDrIdx').val();
+            // 2. Validate operator selected
+            const opDrIdx  = $('#opDrIdx').val();
             const opDrName = $('#mpSearch').val().trim();
             if (!opDrIdx) {
                 $('#mpSearch').addClass('is-invalid');
                 valid = false;
             }
 
-            // Validate: equipment selected and checklist loaded
+            // 3. Validate equipment selected and checklist loaded
             const equipTypeLabel = $('#equipType option:selected').text();
-            const equipIdx = $('#equipID').val();
-            const equipIDLabel = $('#equipID option:selected').text();
-            const totalItems = $('[id^="good-"]').length;
+            const equipIdx       = $('#equipID').val();
+            const equipIDLabel   = $('#equipID option:selected').text();
+            const totalItems     = $('[id^="good-"]').length;
             if (!equipIdx || totalItems === 0) {
                 $('#equipID').addClass('is-invalid');
                 valid = false;
             }
 
-            // Validate: every checklist item must have an explicit selection
+            // 4. Every checklist item must have an explicit selection
             $('[id^="good-"]').each(function() {
                 const idx = this.id.replace('good-', '');
                 if (!$(`input[name="psi-item-${idx}"]:checked`).length) {
@@ -42,29 +43,26 @@
                 }
             });
 
-            // Validate: not-normal items must have a note
+            // 5. Not-normal items must have a note
             const abnormalItems = [];
             $('[id^="bad-"]').each(function() {
                 if (!$(this).prop('checked')) return;
-
-                const idx = this.id.replace('bad-', '');
-                const $ta = $('#note-' + idx);
-                const note = $ta.val().trim();
+                const idx       = this.id.replace('bad-', '');
+                const $ta       = $('#note-' + idx);
+                const note      = $ta.val().trim();
                 const checkPart = $ta.data('check-part') || '';
-
                 if (!note) {
                     $ta.addClass('is-invalid');
                     valid = false;
                 } else {
-                    abnormalItems.push({ idx, check_part: checkPart, note });
+                    abnormalItems.push({ idx: parseInt(idx, 10), check_part: checkPart, note });
                 }
             });
 
+            // 6. Scroll to topmost error
             if (!valid) {
-                // Scroll to whichever error is highest on the page
                 const $firstInvalid    = $('.is-invalid').first();
                 const $firstUnanswered = $('.text-bg-warning[id^="status-"]').first().closest('.psi-item-card');
-
                 let $scrollTarget = null;
                 if ($firstInvalid.length && $firstUnanswered.length) {
                     $scrollTarget = $firstInvalid.offset().top < $firstUnanswered.offset().top
@@ -72,15 +70,25 @@
                 } else {
                     $scrollTarget = $firstInvalid.length ? $firstInvalid : $firstUnanswered;
                 }
-
                 if ($scrollTarget && $scrollTarget.length) {
                     $('html, body').animate({ scrollTop: $scrollTarget.offset().top - 120 }, 300);
                 }
                 return;
             }
 
-            // Build summary modal body
-            const normalCount  = totalItems - abnormalItems.length;
+            // 7. Auto-populate modal shift fields from server time
+            $('#psiDate').val(typeof _SERVER_DATE !== 'undefined' ? _SERVER_DATE : '').removeClass('is-invalid');
+            const serverHour = typeof _SERVER_HOUR !== 'undefined' ? _SERVER_HOUR : new Date().getHours();
+            if (serverHour >= 7 && serverHour < 19) {
+                $('#shiftDay').prop('checked', true);
+            } else {
+                $('#shiftNight').prop('checked', true);
+            }
+            $('#psiHourMeter').val('').removeClass('is-invalid');
+            $('#shiftRequiredMsg').addClass('d-none');
+
+            // 8. Build dynamic summary body
+            const normalCount   = totalItems - abnormalItems.length;
             const abnormalCount = abnormalItems.length;
 
             let summaryHtml = `
@@ -126,30 +134,111 @@
 
             $('#summaryBody').html(summaryHtml);
 
-            // Store payload for final submit
-            window._psiPayload = { opDrIdx, equipIdx, abnormalItems };
+            // 9. Stash form state for the confirm handler
+            window._psiFormState = {
+                opDrIdx:      parseInt(opDrIdx, 10),
+                opDrName:     opDrName,
+                equipIdx:     parseInt(equipIdx, 10),
+                abnormalItems: abnormalItems
+            };
 
             bootstrap.Modal.getOrCreateInstance(document.getElementById('summaryModal')).show();
         });
 
+
+        // ── Confirm button: validate modal fields → POST ─────────────────
         $('#btnConfirmSubmit').on('click', function() {
-            const $btn = $(this).prop('disabled', true).text('Submitting...');
+            let modalValid = true;
+
+            // Validate date
+            const psiDate = $('#psiDate').val();
+            if (!psiDate) {
+                $('#psiDate').addClass('is-invalid');
+                modalValid = false;
+            } else {
+                $('#psiDate').removeClass('is-invalid');
+            }
+
+            // Validate shift
+            const psiShift = $('input[name="psiShift"]:checked').val();
+            if (!psiShift) {
+                $('#shiftRequiredMsg').removeClass('d-none');
+                modalValid = false;
+            } else {
+                $('#shiftRequiredMsg').addClass('d-none');
+            }
+
+            // Validate hour-meter
+            const psiHourMeterVal = $('#psiHourMeter').val();
+            if (psiHourMeterVal === '' || isNaN(parseFloat(psiHourMeterVal)) || parseFloat(psiHourMeterVal) < 0) {
+                $('#psiHourMeter').addClass('is-invalid');
+                modalValid = false;
+            } else {
+                $('#psiHourMeter').removeClass('is-invalid');
+            }
+
+            if (!modalValid) return;
+
+            const $btn      = $(this).prop('disabled', true)
+                                     .html('<span class="spinner-border spinner-border-sm me-2" role="status"></span>Submitting...');
             const csrfToken = $('[name="csrf_test_name"]').val();
 
+            const payload = Object.assign({}, window._psiFormState, {
+                date:          psiDate,
+                shift:         parseInt(psiShift, 10),
+                hourMeterStart: parseFloat(psiHourMeterVal)
+            });
+
             $.ajax({
-                url: '<?= base_url("/operator-driver/submit-psi") ?>',
-                method: 'POST',
+                url:         '<?= base_url("/operator-driver/submit-psi") ?>',
+                method:      'POST',
                 contentType: 'application/json',
-                headers: { 'X-CSRF-TOKEN': csrfToken },
-                data: JSON.stringify(window._psiPayload),
+                headers:     { 'X-CSRF-TOKEN': csrfToken },
+                data:        JSON.stringify(payload),
                 success: function(response) {
+                    // Update CSRF token for any future requests
+                    if (response.csrf_hash) $('[name="csrf_test_name"]').val(response.csrf_hash);
+
                     bootstrap.Modal.getInstance(document.getElementById('summaryModal')).hide();
-                    // TODO: redirect or show success screen
-                    console.log('Submitted:', response);
+
+                    $('body').append(`
+                        <div class="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center"
+                             style="background:rgba(0,0,0,0.65);z-index:2000;backdrop-filter:blur(4px);" id="psiSuccessOverlay">
+                            <div class="rounded-4 shadow-lg p-5 text-center mx-3" style="max-width:360px;background:var(--bs-body-bg);">
+                                <div class="text-success mb-3">
+                                    <i class="fas fa-circle-check" style="font-size:3.5rem;"></i>
+                                </div>
+                                <h4 class="fw-bold mb-2">P2H Submitted!</h4>
+                                <p class="text-muted mb-4 small">
+                                    Your inspection report has been recorded.<br>Have a safe shift!
+                                </p>
+                                <button class="btn btn-primary btn-lg px-5 fw-bold" onclick="location.reload()">
+                                    Start New Form
+                                </button>
+                            </div>
+                        </div>
+                    `);
                 },
                 error: function(xhr) {
-                    console.error('Submit error:', xhr.responseText);
-                    $btn.prop('disabled', false).text('Confirm & Submit');
+                    $btn.prop('disabled', false).html('Confirm &amp; Submit');
+
+                    // Refresh CSRF token if the response carries a new one
+                    try {
+                        const resp = JSON.parse(xhr.responseText);
+                        if (resp && resp.csrf_hash) $('[name="csrf_test_name"]').val(resp.csrf_hash);
+                    } catch(e) {}
+
+                    // Show error message below modal footer buttons
+                    let msg = 'Submission failed. Please try again.';
+                    try { msg = JSON.parse(xhr.responseText).message || msg; } catch(e) {}
+                    if (!$('#psiSubmitErrorWrap').length) {
+                        $('.modal-footer').before(
+                            `<div class="px-3 pb-2" id="psiSubmitErrorWrap">
+                                <div class="alert alert-danger py-2 small mb-0" id="psiSubmitError"></div>
+                             </div>`
+                        );
+                    }
+                    $('#psiSubmitError').text(msg);
                 }
             });
         });

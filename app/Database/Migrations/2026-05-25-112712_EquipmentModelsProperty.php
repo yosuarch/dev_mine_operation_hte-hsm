@@ -39,7 +39,7 @@ class EquipmentModelsProperty extends Migration
 
         // table attribute
         $this->forge->addPrimaryKey('idx');
-        $this->forge->addUniqueKey(['model', 'type', 'brand'], "uq_" . $this->table . '_idx');
+        $this->forge->addUniqueKey('model', "uq_" . $this->table . '_idx');
 
         // create the table
         $this->forge->createTable($this->table);
