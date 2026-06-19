@@ -18,8 +18,15 @@ class ControllerOperatorDriver extends BaseController
 
     private function redis(): \Redis
     {
-        $r = new \Redis();
-        $r->connect('redis', 6379);
+        $cfg = config('Cache')->redis;
+        $r   = new \Redis();
+        $r->connect($cfg['host'] ?? '127.0.0.1', (int) ($cfg['port'] ?? 6379));
+        if (!empty($cfg['password'])) {
+            $r->auth($cfg['password']);
+        }
+        if (!empty($cfg['database'])) {
+            $r->select((int) $cfg['database']);
+        }
         return $r;
     }
 
