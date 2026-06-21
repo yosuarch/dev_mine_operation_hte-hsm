@@ -115,11 +115,11 @@ class PsiRecordValidator extends Migration
         // table attribute
         $this->forge->addPrimaryKey('idx');
         $this->forge->addUniqueKey(
-            ['date', 'shift', 'equipment_id', 'operator_name', 'hm_start', 'hm_end', 'checked_part'],
+            ['date', 'shift', 'equipment_id', 'operator_name', 'hm_start', 'checked_part'],
             "uq_" . $this->table . '_idx'
         );
         $this->forge->addUniqueKey(
-            ['date', 'shift', 'equipment_id', 'operator_name', 'hm_start', 'hm_end', 'checked_part'],
+            ['date', 'shift', 'equipment_id', 'operator_name', 'hm_start', 'checked_part'],
             'idx_psi_validator_lookup'
         );
 
@@ -168,7 +168,7 @@ class PsiRecordValidator extends Migration
         END
         ");
 
-        // create update trigger
+        // create update trigger — WHERE uses only unique key cols; <=> for nullable hm_start
         $db->query("
         CREATE TRIGGER after_psi_record_update
         AFTER UPDATE ON psi_record
@@ -176,33 +176,28 @@ class PsiRecordValidator extends Migration
         BEGIN
             UPDATE {$this->table}
             SET
-                `date`         = NEW.`date`,
-                `equipment_id` = NEW.equipment_id,
-                `shift`        = NEW.`shift`,
-                `operator_name`= NEW.operator_name,
-                `hm_start`     = NEW.hourmeter_start,
-                `hm_end`       = NEW.hourmeter_end,
-                `checked_part` = NEW.checking_part,
-                `operator_note`= NEW.checking_note,
-                `fm_name`      = NEW.fm_name,
-                `fm_note`      = NEW.fm_note,
-                `spv_name`     = NEW.spv_name,
-                `spv_note`     = NEW.spv_note
+                `date`          = NEW.`date`,
+                `equipment_id`  = NEW.equipment_id,
+                `shift`         = NEW.`shift`,
+                `operator_name` = NEW.operator_name,
+                `hm_start`      = NEW.hourmeter_start,
+                `hm_end`        = NEW.hourmeter_end,
+                `checked_part`  = NEW.checking_part,
+                `operator_note` = NEW.checking_note,
+                `fm_name`       = NEW.fm_name,
+                `fm_note`       = NEW.fm_note,
+                `spv_name`      = NEW.spv_name,
+                `spv_note`      = NEW.spv_note
             WHERE `date`          = OLD.`date`
               AND `equipment_id`  = OLD.equipment_id
               AND `shift`         = OLD.`shift`
               AND `operator_name` = OLD.operator_name
-              AND `hm_start`      = OLD.hourmeter_start
-              AND `hm_end`        = OLD.hourmeter_end
-              AND `checked_part`  = OLD.checking_part
-              AND `fm_name`       = OLD.fm_name
-              AND `fm_note`       = OLD.fm_note
-              AND `spv_name`      = OLD.spv_name
-              AND `spv_note`      = OLD.spv_note;
+              AND `hm_start`      <=> OLD.hourmeter_start
+              AND `checked_part`  = OLD.checking_part;
         END
         ");
 
-        // create delete trigger
+        // create delete trigger — simplified WHERE matching unique key only
         $db->query("
         CREATE TRIGGER after_psi_record_delete
         AFTER DELETE ON psi_record
@@ -213,13 +208,8 @@ class PsiRecordValidator extends Migration
               AND `equipment_id`  = OLD.equipment_id
               AND `shift`         = OLD.`shift`
               AND `operator_name` = OLD.operator_name
-              AND `hm_start`      = OLD.hourmeter_start
-              AND `hm_end`        = OLD.hourmeter_end
-              AND `checked_part`  = OLD.checking_part
-              AND `fm_name`       = OLD.fm_name
-              AND `fm_note`       = OLD.fm_note
-              AND `spv_name`      = OLD.spv_name
-              AND `spv_note`      = OLD.spv_note;
+              AND `hm_start`      <=> OLD.hourmeter_start
+              AND `checked_part`  = OLD.checking_part;
         END
         ");
     }

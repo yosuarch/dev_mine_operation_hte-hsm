@@ -3,7 +3,6 @@
 namespace App\Controllers\PrestartInspection\Mobile;
 
 use App\Controllers\BaseController;
-use App\Models\PrestartInspection\ModelPsiRecord;
 
 
 class ControllerOperatorDriver extends BaseController
@@ -84,79 +83,95 @@ class ControllerOperatorDriver extends BaseController
 
         $employeeId = (int) $operator->employee_id;
 
-        // All items normal — nothing to insert, no Redis entry needed
-        if (empty($abnormalItems)) {
-            return $this->response->setJSON([
-                'status'    => 'ok',
-                'message'   => 'P2H submitted. All items normal — no issues recorded.',
-                'csrf_hash' => csrf_hash(),
-            ]);
-        }
+        // Always record session to wh_recording — covers all-normal shifts too
+        $db->query(
+            "INSERT INTO wh_recording (equipment_id, date, shift, operator_name, hourmeter_start, created_at)
+             VALUES (?, ?, ?, ?, ?, NOW())
+             ON DUPLICATE KEY UPDATE modified_at = NOW()",
+            [$equipIdx, $date, $shift, $opDrIdx, $hourMeterStart]
+        );
 
-        // Resolve check_part text → psi_unique_observed_item.idx
-        $checkPartTexts = array_values(array_unique(
-            array_filter(array_map(fn($i) => trim($i['check_part'] ?? ''), $abnormalItems))
-        ));
+        // Upsert abnormal items into psi_record only when they exist
+        if (!empty($abnormalItems)) {
+            $checkPartTexts = array_values(array_unique(
+                array_filter(array_map(fn($i) => trim($i['check_part'] ?? ''), $abnormalItems))
+            ));
 
-        $textToPartId = [];
-        if (!empty($checkPartTexts)) {
-            $placeholders = implode(',', array_fill(0, count($checkPartTexts), '?'));
-            $lookupRows   = $db->query(
-                "SELECT DISTINCT UCASE(REPLACE(puoi.checking_part,'_',' ')) AS text_name,
-                        puoi.idx AS part_id
-                 FROM psi_observed_by_unit_type AS pobu
-                 INNER JOIN psi_unique_observed_item AS puoi ON pobu.checking_part = puoi.idx
-                 WHERE UCASE(REPLACE(puoi.checking_part,'_',' ')) IN ({$placeholders})",
-                $checkPartTexts
-            )->getResultArray();
+            $textToPartId = [];
+            if (!empty($checkPartTexts)) {
+                $placeholders = implode(',', array_fill(0, count($checkPartTexts), '?'));
+                $lookupRows   = $db->query(
+                    "SELECT DISTINCT UCASE(REPLACE(puoi.checking_part_idn,'_',' ')) AS text_name,
+                            puoi.idx AS part_id
+                     FROM psi_observed_by_unit_type AS pobu
+                     INNER JOIN psi_unique_observed_item AS puoi ON pobu.checking_part = puoi.idx
+                     WHERE UCASE(REPLACE(puoi.checking_part_idn,'_',' ')) IN ({$placeholders})",
+                    $checkPartTexts
+                )->getResultArray();
 
-            foreach ($lookupRows as $row) {
-                $textToPartId[$row['text_name']] = (int) $row['part_id'];
+                foreach ($lookupRows as $row) {
+                    $textToPartId[$row['text_name']] = (int) $row['part_id'];
+                }
+            }
+
+            $rows = [];
+            foreach ($abnormalItems as $item) {
+                $checkPartText = trim($item['check_part'] ?? '');
+                $itemNote      = trim($item['note']       ?? '');
+                $partId        = $textToPartId[$checkPartText] ?? null;
+
+                if (!$partId || !$itemNote) continue;
+
+                $rows[] = [
+                    'equipment_id'    => $equipIdx,
+                    'date'            => $date,
+                    'shift'           => $shift,
+                    'operator_name'   => $opDrIdx,
+                    'hourmeter_start' => $hourMeterStart,
+                    'checking_part'   => $partId,
+                    'checking_status' => 1,
+                    'checking_note'   => $itemNote,
+                ];
+            }
+
+            if (!empty($rows)) {
+                $placeholders = implode(', ', array_fill(0, count($rows), '(?, ?, ?, ?, ?, ?, ?, ?)'));
+                $bindings = [];
+                foreach ($rows as $row) {
+                    $bindings[] = $row['equipment_id'];
+                    $bindings[] = $row['date'];
+                    $bindings[] = $row['shift'];
+                    $bindings[] = $row['operator_name'];
+                    $bindings[] = $row['hourmeter_start'];
+                    $bindings[] = $row['checking_part'];
+                    $bindings[] = $row['checking_status'];
+                    $bindings[] = $row['checking_note'];
+                }
+
+                $db->transStart();
+                $db->query(
+                    "INSERT INTO psi_record
+                        (equipment_id, date, shift, operator_name, hourmeter_start, checking_part, checking_status, checking_note)
+                     VALUES {$placeholders}
+                     ON DUPLICATE KEY UPDATE
+                        checking_status = VALUES(checking_status),
+                        checking_note   = VALUES(checking_note),
+                        modified_at     = NOW()",
+                    $bindings
+                );
+                $db->transComplete();
+
+                if (!$db->transStatus()) {
+                    return $this->response->setStatusCode(500)->setJSON([
+                        'status'    => 'error',
+                        'message'   => 'Database error. Please try again.',
+                        'csrf_hash' => csrf_hash(),
+                    ]);
+                }
             }
         }
 
-        // Build batch rows
-        $rows = [];
-        foreach ($abnormalItems as $item) {
-            $checkPartText = trim($item['check_part'] ?? '');
-            $itemNote      = trim($item['note']       ?? '');
-            $partId        = $textToPartId[$checkPartText] ?? null;
-
-            if (!$partId || !$itemNote) continue;
-
-            $rows[] = [
-                'equipment_id'    => $equipIdx,
-                'date'            => $date,
-                'shift'           => $shift,
-                'operator_name'   => $opDrIdx,
-                'hourmeter_start' => $hourMeterStart,
-                'checking_part'   => $partId,
-                'checking_status' => 1,
-                'checking_note'   => $itemNote,
-            ];
-        }
-
-        if (empty($rows)) {
-            return $this->response->setStatusCode(422)->setJSON([
-                'status'    => 'error',
-                'message'   => 'Could not resolve any checking parts from submitted data.',
-                'csrf_hash' => csrf_hash(),
-            ]);
-        }
-
-        $db->transStart();
-        (new ModelPsiRecord())->insertBatch($rows);
-        $db->transComplete();
-
-        if (!$db->transStatus()) {
-            return $this->response->setStatusCode(500)->setJSON([
-                'status'    => 'error',
-                'message'   => 'Database error. Please try again.',
-                'csrf_hash' => csrf_hash(),
-            ]);
-        }
-
-        // Write open-shift session to Redis — TTL 72000 s (20 h)
+        // Always write Redis so HM End can be recorded at shift end
         $redis = $this->redis();
         $redis->setex(
             $this->redisKey($employeeId, $equipIdx),
@@ -171,9 +186,13 @@ class ControllerOperatorDriver extends BaseController
             ])
         );
 
+        $message = !empty($abnormalItems)
+            ? 'P2H submitted successfully.'
+            : 'P2H submitted. All items normal — working hours recorded.';
+
         return $this->response->setJSON([
             'status'    => 'ok',
-            'message'   => 'P2H submitted successfully.',
+            'message'   => $message,
             'csrf_hash' => csrf_hash(),
         ]);
     }
@@ -290,8 +309,8 @@ class ControllerOperatorDriver extends BaseController
 
         $db = \Config\Database::connect();
 
-        // Guard: verify rows still open
-        $count = $db->table('psi_record')
+        // Guard: wh_recording is the source of truth — exists for all sessions including all-normal
+        $whOpen = $db->table('wh_recording')
             ->where('operator_name',   $s['operator_idx'])
             ->where('equipment_id',    $s['equipment_idx'])
             ->where('date',            $s['date'])
@@ -301,18 +320,17 @@ class ControllerOperatorDriver extends BaseController
             ->where('deleted_at IS NULL', null, false)
             ->countAllResults();
 
-        if ($count === 0) {
+        if ($whOpen === 0) {
             $redis->del($redisKey);
             return $this->response->setStatusCode(404)->setJSON([
                 'status'    => 'error',
-                'message'   => 'Records already closed or not found.',
+                'message'   => 'Shift already closed or not found.',
                 'csrf_hash' => csrf_hash(),
             ]);
         }
 
-        // Bulk UPDATE — all rows for this session get hourmeter_end
-        $db->transStart();
-        $db->table('psi_record')
+        // Check if abnormal psi_record rows exist for this session
+        $psiOpen = $db->table('psi_record')
             ->where('operator_name',   $s['operator_idx'])
             ->where('equipment_id',    $s['equipment_idx'])
             ->where('date',            $s['date'])
@@ -320,10 +338,36 @@ class ControllerOperatorDriver extends BaseController
             ->where('hourmeter_start', $s['hourmeter_start'])
             ->where('hourmeter_end IS NULL', null, false)
             ->where('deleted_at IS NULL', null, false)
-            ->update([
-                'hourmeter_end' => $hmEnd,
-                'modified_at'   => date('Y-m-d H:i:s'),
-            ]);
+            ->countAllResults();
+
+        $now = date('Y-m-d H:i:s');
+
+        $db->transStart();
+
+        // Always close wh_recording
+        $db->table('wh_recording')
+            ->where('operator_name',   $s['operator_idx'])
+            ->where('equipment_id',    $s['equipment_idx'])
+            ->where('date',            $s['date'])
+            ->where('shift',           $s['shift'])
+            ->where('hourmeter_start', $s['hourmeter_start'])
+            ->where('hourmeter_end IS NULL', null, false)
+            ->where('deleted_at IS NULL', null, false)
+            ->update(['hourmeter_end' => $hmEnd, 'modified_at' => $now]);
+
+        // Close psi_record only if abnormal rows exist
+        if ($psiOpen > 0) {
+            $db->table('psi_record')
+                ->where('operator_name',   $s['operator_idx'])
+                ->where('equipment_id',    $s['equipment_idx'])
+                ->where('date',            $s['date'])
+                ->where('shift',           $s['shift'])
+                ->where('hourmeter_start', $s['hourmeter_start'])
+                ->where('hourmeter_end IS NULL', null, false)
+                ->where('deleted_at IS NULL', null, false)
+                ->update(['hourmeter_end' => $hmEnd, 'modified_at' => $now]);
+        }
+
         $db->transComplete();
 
         if (!$db->transStatus()) {

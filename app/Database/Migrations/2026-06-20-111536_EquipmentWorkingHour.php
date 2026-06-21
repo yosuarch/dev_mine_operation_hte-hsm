@@ -4,11 +4,10 @@ namespace App\Database\Migrations;
 
 use CodeIgniter\Database\Migration;
 
-class PsiRecord extends Migration
+class EquipmentWorkingHour extends Migration
 {
-
     // common info
-    protected $table = 'psi_record';
+    protected $table = 'wh_recording';
     protected $DBGroup = 'default';
 
     public function up()
@@ -53,19 +52,7 @@ class PsiRecord extends Migration
                 'constraint' => '18,2',
                 'null' => true,
             ],
-            'checking_part' => [
-                'type' => 'int',
-                'constraint' => 6,
-                'unsigned' => true,
-                'null' => false,
-                'comment' => 'this field must have content',
-            ],
-            'checking_status' => [
-                'type' => 'tinyint',
-                'constraint' => 1,
-                'null' => false,
-            ],
-            'checking_note' => [
+            'operator_note' => [
                 'type' => 'text',
                 'null' => true,
                 'default' => 'issue not define by operator/driver',
@@ -75,58 +62,32 @@ class PsiRecord extends Migration
                 'constraint' => 3,
                 'unsigned' => true,
                 'null' => true,
-                'comment' => 'user account that input the data',
+                'comment' => 'user account that input the data or use the same name from [operator_name]',
             ],
             'created_at' => [
                 'type' => 'datetime',
                 'null' => false,
                 'default' => new \CodeIgniter\Database\RawSql('current_timestamp'),
+                'comment' => 'this is must use the current_timestamp when record is created'
             ],
             'modified_at' => [
                 'type' => 'datetime',
                 'null' => true,
                 'default' => new \CodeIgniter\Database\RawSql('null'),
+                'comment' => 'it will show the last time edited'
             ],
             'deleted_at' => [
                 'type' => 'datetime',
                 'null' => true,
                 'default' => new \CodeIgniter\Database\RawSql('null'),
             ],
-            'fm_name' => [
-                'type' => 'int',
-                'constraint' => 3,
-                'unsigned' => true,
-                'null' => true,
-                'comment' => 'user account that input the data',
-            ],
-            'fm_note' => [
-                'type' => 'text',
-                'null' => true,
-                'default' => 'this is data is a dummy_please check the actual sheet to make confirmation or ask the admin',
-            ],
-            'spv_name' => [
-                'type' => 'int',
-                'constraint' => 3,
-                'unsigned' => true,
-                'null' => true,
-                'comment' => 'user account that input the data',
-            ],
-            'spv_note' => [
-                'type' => 'text',
-                'null' => true,
-                'default' => 'this is data is a dummy_please check the actual sheet to make confirmation or ask the admin',
-            ],
         ]);
 
         // table attribute
         $this->forge->addPrimaryKey('idx');
         $this->forge->addUniqueKey(
-            ['equipment_id', 'date', 'shift', 'operator_name', 'hourmeter_start', 'checking_part'],
+            ['equipment_id', 'date', 'shift', 'operator_name', 'hourmeter_start'],
             "uq_" . $this->table . '_idx'
-        );
-        $this->forge->addUniqueKey(
-            ['date', 'shift', 'equipment_id', 'operator_name', 'hourmeter_start', 'checking_part'],
-            'idx_psi_lookup'
         );
 
         // create the table
