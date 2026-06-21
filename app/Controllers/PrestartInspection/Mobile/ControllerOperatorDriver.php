@@ -15,6 +15,56 @@ class ControllerOperatorDriver extends BaseController
 
     // ── Helpers ──────────────────────────────────────────────────────────────
 
+    private function sendEmail(string $toAddress, string $toName, string $subject, string $htmlBody): void
+    {
+        // Suppress PHP warnings (e.g. fsockopen) so CI4's error handler doesn't
+        // convert them to exceptions and pollute the log with stack traces.
+        $prev = set_error_handler(static fn() => true);
+        try {
+            $email = \Config\Services::email();
+            $email->initialize(['mailType' => 'html']);
+            $email->setTo("\"{$toName}\" <{$toAddress}>");
+            $email->setSubject($subject);
+            $email->setMessage($htmlBody);
+
+            if (!$email->send(false)) {
+                log_message('error', '[EMAIL] send failed — to: ' . $toAddress);
+            }
+            $email->clear();
+        } catch (\Throwable $e) {
+            log_message('error', '[EMAIL] exception — to: ' . $toAddress . ' — ' . $e->getMessage());
+        } finally {
+            set_error_handler($prev);
+        }
+    }
+
+    private function sendWhatsApp(string $phone, string $text): void
+    {
+        $cfg = config('Waha');
+        $ch  = curl_init(rtrim($cfg->baseUrl, '/') . '/api/sendText');
+        curl_setopt_array($ch, [
+            CURLOPT_POST           => true,
+            CURLOPT_POSTFIELDS     => json_encode([
+                'session' => $cfg->session,
+                'chatId'  => $phone . '@c.us',
+                'text'    => $text,
+            ]),
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_TIMEOUT        => 1,
+            CURLOPT_HTTPHEADER     => [
+                'Content-Type: application/json',
+                'X-Api-Key: ' . $cfg->apiKey,
+            ],
+        ]);
+        $response = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $curlErr  = curl_error($ch);
+
+        if ($curlErr || $httpCode < 200 || $httpCode >= 300) {
+            log_message('error', "[WAHA] sendText failed — phone: {$phone}, HTTP: {$httpCode}, curl_error: {$curlErr}, response: {$response}");
+        }
+    }
+
     private function redis(): \Redis
     {
         $cfg = config('Cache')->redis;
@@ -69,7 +119,7 @@ class ControllerOperatorDriver extends BaseController
 
         // Validate operator exists and get employee_id for Redis key
         $operator = $db->table('mp_list')
-            ->select('idx, employee_id')
+            ->select('idx, employee_id, name')
             ->where('idx', $opDrIdx)
             ->get()->getRow();
 
@@ -185,6 +235,79 @@ class ControllerOperatorDriver extends BaseController
                 'hourmeter_start' => $hourMeterStart,
             ])
         );
+
+        // Notifications — synchronous, log failures but never block submit
+        $recipients = $db->table('notification_target')
+            ->where('active', 1)
+            ->where('deleted_at IS NULL', null, false)
+            ->get()->getResultArray();
+
+        if (!empty($recipients)) {
+            $equipRow = $db->table('equipment_register')
+                ->select('CONCAT(text_code, num_code) AS label', false)
+                ->where('idx', $equipIdx)
+                ->get()->getRow();
+
+            $hasAbnormal  = !empty($abnormalItems);
+            $shiftLabel   = $shift === 1 ? 'Day' : 'Night';
+            $operatorName = $operator->name ?? "Operator #{$opDrIdx}";
+            $equipLabel   = $equipRow ? $equipRow->label : "Unit #{$equipIdx}";
+
+            $subject = '[P2H] ' . $equipLabel . ' — ' . $date . ' | Shift ' . $shiftLabel
+                     . ($hasAbnormal ? ' — ' . count($abnormalItems) . ' item tidak normal' : '');
+
+            $statusBlock = $hasAbnormal
+                ? '<p style="color:#dc3545;font-weight:bold;margin:20px 0 8px;">&#9888;&#65039; ' . count($abnormalItems) . ' item tidak normal:</p>'
+                  . '<ul style="margin:0;padding-left:20px;color:#333;">'
+                  . implode('', array_map(fn($i) =>
+                      '<li style="margin-bottom:4px;"><strong>' . htmlspecialchars(trim($i['check_part'] ?? '')) . '</strong>'
+                      . ' &mdash; &ldquo;' . htmlspecialchars(trim($i['note'] ?? '')) . '&rdquo;</li>',
+                      $abnormalItems))
+                  . '</ul>'
+                : '<p style="color:#198754;margin-top:20px;">&#9989; Semua item normal.</p>';
+
+            $htmlBody = '
+            <div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px;color:#333;">
+                <h2 style="margin:0 0 4px;">P2H Submitted</h2>
+                <p style="margin:0 0 20px;color:#888;font-size:13px;">Pre-Start Inspection Record</p>
+                <table style="width:100%;border-collapse:collapse;">
+                    <tr style="border-bottom:1px solid #eee;">
+                        <td style="padding:10px 0;color:#888;width:120px;">Operator</td>
+                        <td style="padding:10px 0;font-weight:bold;">' . htmlspecialchars($operatorName) . '</td>
+                    </tr>
+                    <tr style="border-bottom:1px solid #eee;">
+                        <td style="padding:10px 0;color:#888;">Unit</td>
+                        <td style="padding:10px 0;font-weight:bold;">' . htmlspecialchars($equipLabel) . '</td>
+                    </tr>
+                    <tr style="border-bottom:1px solid #eee;">
+                        <td style="padding:10px 0;color:#888;">Tanggal</td>
+                        <td style="padding:10px 0;">' . htmlspecialchars($date) . ' &middot; Shift ' . $shiftLabel . '</td>
+                    </tr>
+                    <tr>
+                        <td style="padding:10px 0;color:#888;">HM Start</td>
+                        <td style="padding:10px 0;">' . $hourMeterStart . '</td>
+                    </tr>
+                </table>
+                ' . $statusBlock . '
+            </div>';
+
+            // Plain text for WhatsApp (future official API)
+            $plainMsg  = "[P2H SUBMITTED]\nOperator : {$operatorName}\nUnit     : {$equipLabel}\n"
+                       . "Tanggal  : {$date} | Shift {$shiftLabel}\nHM Start : {$hourMeterStart}\n\n";
+            $plainMsg .= $hasAbnormal
+                ? implode('', array_map(fn($i) => '• ' . trim($i['check_part'] ?? '') . ' — "' . trim($i['note'] ?? '') . '"' . "\n", $abnormalItems))
+                : '✅ Semua item normal.';
+
+            foreach ($recipients as $r) {
+                if ($r['notify_on'] === 'abnormal_only' && !$hasAbnormal) continue;
+
+                if ($r['channel'] === 'email') {
+                    $this->sendEmail($r['contact'], $r['name'], $subject, $htmlBody);
+                } elseif ($r['channel'] === 'whatsapp') {
+                    $this->sendWhatsApp($r['contact'], $plainMsg);
+                }
+            }
+        }
 
         $message = !empty($abnormalItems)
             ? 'P2H submitted successfully.'
