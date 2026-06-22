@@ -111,6 +111,26 @@
         .sidebar-footer { margin-top: auto; padding-bottom: 8px; }
         .sidebar-divider { border-top: 1px solid var(--sidebar-divider); margin: 8px 16px; }
 
+        /* ─── Sidebar section labels ─────────────────────────────── */
+        .sidebar-section-label {
+            font-size: .62rem;
+            font-weight: 700;
+            letter-spacing: .09em;
+            text-transform: uppercase;
+            color: var(--sidebar-link);
+            opacity: .45;
+            padding: 14px 20px 2px;
+            white-space: nowrap;
+            overflow: hidden;
+            transition: opacity var(--transition), height var(--transition), padding var(--transition);
+        }
+        #desktopSidebar.sidebar-minimized .sidebar-section-label {
+            opacity: 0;
+            height: 0;
+            padding: 0;
+            pointer-events: none;
+        }
+
         /* ─── Internal collapse button ───────────────────────────── */
         #sidebarInternalToggle {
             display: flex;

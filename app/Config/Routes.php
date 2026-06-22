@@ -24,8 +24,11 @@ $routes->group('', function ($routes) {
     $routes->get('/admin-dashboard', 'DashboardRender::index');
     $routes->get('/prestart-insepction', 'PrestartInspection\ControllerPSI::index');
     $routes->get('/manpower', 'Manpower\ControllerManpower::index');
-
-
+    $routes->get('/notification-target', 'Settings\NotificationTarget::index');
+    $routes->post('/notification-target/store', 'Settings\NotificationTarget::store');
+    $routes->post('/notification-target/update/(:num)', 'Settings\NotificationTarget::update/$1');
+    $routes->post('/notification-target/toggle/(:num)', 'Settings\NotificationTarget::toggle/$1');
+    $routes->post('/notification-target/delete/(:num)', 'Settings\NotificationTarget::destroy/$1');
 
     // Uploads & Ajax (Protected)
     $routes->post('/preview-psi-record', 'PrestartInspection\PreviewBeforeUpload::index');
@@ -36,6 +39,7 @@ $routes->group('', function ($routes) {
     $routes->get('/ajax-datatable/manpowerlist', 'Manpower\ControllerGetData::fetchManPowerList');
     $routes->get('/ajax-chart/freq-danger-code', 'PrestartInspection\ControllerGetData::fetchGetDangerCodeFreq');
     $routes->get('/ajax-daily-unit-type', 'PrestartInspection\ControllerEmailReport::getData1');
+    $routes->get('/ajax/dashboard-data', 'DashboardRender::ajaxData');
 
     // Testing
     $routes->get('/test-mail', 'TestMail::sendTestEmail');

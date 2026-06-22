@@ -8,13 +8,17 @@
 <aside id="desktopSidebar" class="d-none d-lg-flex flex-column">
 
     <!-- Primary navigation -->
-    <nav class="nav flex-column pt-3 flex-grow-1 sidebar-nav" aria-label="Primary navigation">
+    <nav class="nav flex-column pt-2 flex-grow-1 sidebar-nav" aria-label="Primary navigation">
+
+        <span class="sidebar-section-label">Main</span>
 
         <a class="nav-link" href="/admin-dashboard"
             data-sidebar-tip="Dashboard">
             <i class="fas fa-tachometer-alt"></i>
             <span class="sidebar-text">Dashboard</span>
         </a>
+
+        <span class="sidebar-section-label">Operations</span>
 
         <a class="nav-link" href="/prestart-insepction"
             data-sidebar-tip="Pre-Start Inspection">
@@ -26,6 +30,14 @@
             data-sidebar-tip="Manpower">
             <i class="fas fa-users"></i>
             <span class="sidebar-text">Manpower</span>
+        </a>
+
+        <span class="sidebar-section-label">Settings</span>
+
+        <a class="nav-link" href="/notification-target"
+            data-sidebar-tip="Notifications">
+            <i class="fas fa-bell"></i>
+            <span class="sidebar-text">Notifications</span>
         </a>
 
     </nav>
@@ -75,10 +87,14 @@
     <div class="offcanvas-body p-0">
         <nav class="nav flex-column pt-2 sidebar-nav" aria-label="Primary navigation">
 
+            <span class="sidebar-section-label" style="opacity:.45;font-size:.62rem;font-weight:700;letter-spacing:.09em;text-transform:uppercase;padding:14px 20px 2px;display:block;">Main</span>
+
             <a class="nav-link" href="/admin-dashboard">
                 <i class="fas fa-tachometer-alt"></i>
                 <span class="sidebar-text">Dashboard</span>
             </a>
+
+            <span class="sidebar-section-label" style="opacity:.45;font-size:.62rem;font-weight:700;letter-spacing:.09em;text-transform:uppercase;padding:14px 20px 2px;display:block;">Operations</span>
 
             <a class="nav-link" href="/prestart-insepction">
                 <i class="fas fa-clipboard-check"></i>
@@ -88,6 +104,13 @@
             <a class="nav-link" href="/manpower">
                 <i class="fas fa-users"></i>
                 <span class="sidebar-text">Manpower</span>
+            </a>
+
+            <span class="sidebar-section-label" style="opacity:.45;font-size:.62rem;font-weight:700;letter-spacing:.09em;text-transform:uppercase;padding:14px 20px 2px;display:block;">Settings</span>
+
+            <a class="nav-link" href="/notification-target">
+                <i class="fas fa-bell"></i>
+                <span class="sidebar-text">Notifications</span>
             </a>
 
             <div class="sidebar-divider"></div>
