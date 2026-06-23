@@ -7,13 +7,13 @@
 <div class="container-fluid py-4">
 
     <!-- Header -->
-    <div class="d-flex align-items-center justify-content-between mb-4">
+    <div class="d-flex flex-column flex-sm-row align-items-start align-items-sm-center justify-content-between mb-4 gap-3">
         <div>
             <h4 class="fw-bold mb-0">Notification Recipients</h4>
             <p class="text-muted mb-0 small">Manage who receives P2H submission notifications.</p>
         </div>
-        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addRecipientModal">
-            <i class="fas fa-plus me-2"></i>Add Recipient
+        <button type="button" class="btn btn-primary btn-sm fw-bold px-3" data-bs-toggle="modal" data-bs-target="#addRecipientModal">
+            <i class="fas fa-plus me-1"></i> Add Recipient
         </button>
     </div>
 
@@ -26,8 +26,8 @@
                         <tr>
                             <th class="ps-4">Name</th>
                             <th>Channel</th>
-                            <th>Contact</th>
-                            <th>Notify On</th>
+                            <th class="d-none d-md-table-cell">Contact</th>
+                            <th class="d-none d-lg-table-cell">Notify On</th>
                             <th class="text-center">Active</th>
                             <th class="text-center pe-4">Actions</th>
                         </tr>
@@ -54,8 +54,8 @@
                                 </span>
                                 <?php endif; ?>
                             </td>
-                            <td class="text-muted" style="font-size:.9rem;"><?= esc($r['contact']) ?></td>
-                            <td>
+                            <td class="text-muted d-none d-md-table-cell" style="font-size:.9rem;"><?= esc($r['contact']) ?></td>
+                            <td class="d-none d-lg-table-cell">
                                 <?php if ($r['notify_on'] === 'abnormal_only'): ?>
                                 <span class="badge bg-warning-subtle text-warning border border-warning-subtle">
                                     Abnormal only

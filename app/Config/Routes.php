@@ -29,6 +29,14 @@ $routes->group('', function ($routes) {
     $routes->post('/notification-target/update/(:num)', 'Settings\NotificationTarget::update/$1');
     $routes->post('/notification-target/toggle/(:num)', 'Settings\NotificationTarget::toggle/$1');
     $routes->post('/notification-target/delete/(:num)', 'Settings\NotificationTarget::destroy/$1');
+    $routes->get('/check-part', 'Settings\CheckPart::index');
+    $routes->post('/check-part/store', 'Settings\CheckPart::store');
+    $routes->post('/check-part/update/(:num)', 'Settings\CheckPart::update/$1');
+    $routes->post('/check-part/delete/(:num)', 'Settings\CheckPart::destroy/$1');
+    $routes->get('/equipment-observed-list', 'Settings\EquipmentObservedList::index');
+    $routes->post('/equipment-observed-list/store', 'Settings\EquipmentObservedList::store');
+    $routes->post('/equipment-observed-list/update/(:num)', 'Settings\EquipmentObservedList::update/$1');
+    $routes->post('/equipment-observed-list/delete/(:num)', 'Settings\EquipmentObservedList::destroy/$1');
 
     // Uploads & Ajax (Protected)
     $routes->post('/preview-psi-record', 'PrestartInspection\PreviewBeforeUpload::index');

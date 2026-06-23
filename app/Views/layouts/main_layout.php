@@ -69,10 +69,10 @@
             width: var(--sidebar-w);
             flex-shrink: 0;
             background-color: var(--sidebar-bg);
-            min-height: calc(100vh - var(--navbar-h));
             display: flex;
             flex-direction: column;
-            overflow: hidden;
+            overflow-x: hidden;
+            overflow-y: auto;
             transition: width var(--transition);
         }
         #desktopSidebar.sidebar-minimized { width: var(--sidebar-w-mini); }
@@ -218,26 +218,26 @@
     </nav>
 
     <!-- ── Page shell ──────────────────────────────────────────── -->
-    <div class="d-flex p-0 m-0">
+    <div class="d-flex p-0 m-0" style="height:calc(100vh - var(--navbar-h)); overflow:hidden;">
 
         <!-- Sidebar (desktop aside + mobile offcanvas) -->
         <?= view('components/sidebar') ?>
 
-        <!-- Content area -->
-        <main class="flex-grow-1 p-4" style="min-height:calc(100vh - var(--navbar-h)); overflow-y:auto;">
-            <div class="container-fluid">
+        <!-- Content area — scrolls internally so tables never push the viewport -->
+        <main class="flex-grow-1 d-flex flex-column" style="overflow-y:auto; min-height:0;">
+            <div class="container-fluid p-4 flex-grow-1">
                 <?= $this->renderSection('content'); ?>
             </div>
+
+            <!-- Footer lives inside main so it scrolls with content and stays reachable -->
+            <footer class="border-top mt-auto">
+                <div class="container-fluid p-0 m-0">
+                    <?= view('components/footer') ?>
+                </div>
+            </footer>
         </main>
 
     </div>
-
-    <!-- ── Footer ──────────────────────────────────────────────── -->
-    <footer class="border-top">
-        <div class="container-fluid p-0 m-0">
-            <?= view('components/footer') ?>
-        </div>
-    </footer>
 
     <!-- ── Modals ──────────────────────────────────────────────── -->
     <?= $this->renderSection('modal'); ?>

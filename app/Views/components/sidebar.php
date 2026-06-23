@@ -40,6 +40,18 @@
             <span class="sidebar-text">Notifications</span>
         </a>
 
+        <a class="nav-link" href="/check-part"
+            data-sidebar-tip="Check Parts">
+            <i class="fas fa-list-ul"></i>
+            <span class="sidebar-text">Check Parts</span>
+        </a>
+
+        <a class="nav-link" href="/equipment-observed-list"
+            data-sidebar-tip="Checklist Config">
+            <i class="fas fa-clipboard-list"></i>
+            <span class="sidebar-text">Checklist Config</span>
+        </a>
+
     </nav>
 
     <!-- Footer: logout + collapse button -->
@@ -111,6 +123,16 @@
             <a class="nav-link" href="/notification-target">
                 <i class="fas fa-bell"></i>
                 <span class="sidebar-text">Notifications</span>
+            </a>
+
+            <a class="nav-link" href="/check-part">
+                <i class="fas fa-list-ul"></i>
+                <span class="sidebar-text">Check Parts</span>
+            </a>
+
+            <a class="nav-link" href="/equipment-observed-list">
+                <i class="fas fa-clipboard-list"></i>
+                <span class="sidebar-text">Checklist Config</span>
             </a>
 
             <div class="sidebar-divider"></div>
