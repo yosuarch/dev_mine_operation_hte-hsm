@@ -330,7 +330,7 @@
                 <button type="button" class="btn btn-outline-secondary flex-fill" data-bs-dismiss="modal">
                     Back to Edit
                 </button>
-                <button type="button" id="btnConfirmSubmit" class="btn btn-primary flex-fill fw-bold">
+                <button type="button" id="btnConfirmSubmit" class="btn btn-primary flex-fill fw-bold submit">
                     Confirm &amp; Submit
                 </button>
             </div>
