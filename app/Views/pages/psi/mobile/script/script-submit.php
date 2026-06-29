@@ -6,6 +6,7 @@
 
             // 1. Clear previous error states
             $('.is-invalid').removeClass('is-invalid');
+            $('#mpSearchFeedback').hide();
             $('.badge.text-bg-warning[id^="status-"]')
                 .attr('class', 'position-absolute top-0 end-0 mt-2 me-2 badge rounded-pill')
                 .attr('style', 'font-size:0.6rem;background:var(--bs-secondary-bg);color:var(--bs-secondary-color);')
@@ -15,9 +16,10 @@
 
             // 2. Validate operator selected
             const opDrIdx  = $('#opDrIdx').val();
-            const opDrName = $('#mpSearch').val().trim();
+            const opDrName = $('#mpSearch option:selected').text().trim();
             if (!opDrIdx) {
-                $('#mpSearch').addClass('is-invalid');
+                $('#mpSearch').closest('.bootstrap-select').find('.dropdown-toggle').addClass('is-invalid');
+                $('#mpSearchFeedback').show();
                 valid = false;
             }
 

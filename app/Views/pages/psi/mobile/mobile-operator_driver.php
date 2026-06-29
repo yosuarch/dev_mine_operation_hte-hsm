@@ -2,6 +2,7 @@
 
 <?= $this->section('link'); ?>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-select@1.14.0-beta3/dist/css/bootstrap-select.min.css">
 <script>
     // Pre-paint: apply stored color mode before CSS renders to prevent flash
     (function() {
@@ -102,6 +103,75 @@
     .psi-bottom-spacer {
         height: 72px;
     }
+
+    /* ── Selectpicker — operator name ─────────────────────── */
+    .bootstrap-select {
+        width: 100% !important;
+    }
+
+    /* Button inherits Bootstrap's body tokens so it follows data-bs-theme automatically */
+    .bootstrap-select > .dropdown-toggle {
+        min-height: 3.2rem;
+        font-size: 1.05rem;
+        display: flex;
+        align-items: center;
+        width: 100%;
+        text-align: left;
+        background-color: var(--bs-body-bg) !important;
+        color: var(--bs-body-color) !important;
+        border-color: var(--bs-border-color) !important;
+    }
+
+    .bootstrap-select > .dropdown-toggle:hover {
+        background-color: var(--bs-tertiary-bg) !important;
+        color: var(--bs-body-color) !important;
+        border-color: var(--bs-border-color) !important;
+    }
+
+    .bootstrap-select.show > .dropdown-toggle,
+    .bootstrap-select > .dropdown-toggle:focus {
+        background-color: var(--bs-body-bg) !important;
+        color: var(--bs-body-color) !important;
+        border-color: var(--bs-primary) !important;
+        box-shadow: 0 0 0 0.25rem rgba(var(--bs-primary-rgb), 0.25) !important;
+    }
+
+    .bootstrap-select > .dropdown-toggle.is-invalid {
+        border-color: var(--bs-danger) !important;
+    }
+
+    .bootstrap-select > .dropdown-toggle.is-invalid:focus {
+        box-shadow: 0 0 0 0.25rem rgba(var(--bs-danger-rgb), 0.25) !important;
+    }
+
+    /* Dropdown menu and live-search use Bootstrap's own vars — already theme-aware */
+    .bootstrap-select .dropdown-menu {
+        background-color: var(--bs-body-bg);
+        border-color: var(--bs-border-color);
+    }
+
+    .bootstrap-select .bs-searchbox .form-control {
+        font-size: 1rem;
+        background-color: var(--bs-body-bg);
+        color: var(--bs-body-color);
+        border-color: var(--bs-border-color);
+    }
+
+    .bootstrap-select .dropdown-item {
+        color: var(--bs-body-color);
+    }
+
+    .bootstrap-select .dropdown-item:hover,
+    .bootstrap-select .dropdown-item:focus {
+        background-color: var(--bs-tertiary-bg);
+        color: var(--bs-body-color);
+    }
+
+    .bootstrap-select .dropdown-item.active,
+    .bootstrap-select .dropdown-item:active {
+        background-color: var(--bs-primary);
+        color: #fff;
+    }
 </style>
 <?= $this->endSection(); ?>
 
@@ -138,10 +208,14 @@
 
                     <div class="mb-4">
                         <label for="mpSearch" class="form-label fw-semibold fs-6">Full Name</label>
-                        <input type="text" class="form-control form-control-lg" id="mpSearch" list="mpListOptions"
-                            placeholder="Type your name..." autocomplete="off">
-                        <datalist id="mpListOptions"></datalist>
-                        <div class="invalid-feedback">Please select a valid operator / driver name.</div>
+                        <select id="mpSearch" class="selectpicker"
+                            data-live-search="true"
+                            data-live-search-placeholder="Type your name..."
+                            data-size="7"
+                            data-none-results-text="No match for '{0}'"
+                            title="Select your name...">
+                        </select>
+                        <div class="invalid-feedback" id="mpSearchFeedback">Please select a valid operator / driver name.</div>
                     </div>
 
                     <div>
@@ -342,6 +416,7 @@
 
 <?= $this->section('script'); ?>
 <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap-select@1.14.0-beta3/dist/js/bootstrap-select.min.js"></script>
 <?= $this->include('pages/psi/mobile/script/script-operator_driver_name_id'); ?>
 <?= $this->include('pages/psi/mobile/script/script-equipment_type_unique'); ?>
 <?= $this->include('pages/psi/mobile/script/script-equipment_id'); ?>

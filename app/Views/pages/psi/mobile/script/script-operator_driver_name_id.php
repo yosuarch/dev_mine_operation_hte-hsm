@@ -1,34 +1,33 @@
 <script>
     $(document).ready(function() {
-        let manpowerData = [];
 
-        // 1. Fetch manpower list
+        // 1. Fetch manpower list and populate selectpicker
         $.ajax({
             url: '<?= base_url("/operator-driver/operator-driver-name-id") ?>',
             method: 'GET',
             dataType: 'json',
             success: function(response) {
-                manpowerData = response;
-                let options = '';
+                let options = '<option value=""></option>';
                 response.forEach(function(mp) {
-                    options += `<option value="${mp.name}" data-id="${mp.employee_id}"></option>`;
+                    options += `<option value="${mp.idx}" data-employee-id="${mp.employee_id}">${mp.name}</option>`;
                 });
-                $('#mpListOptions').html(options);
+                $('#mpSearch').html(options).selectpicker('refresh');
             },
             error: function(xhr, status, error) {
                 console.error("AJAX Error: ", error);
             }
         });
 
-        // 2. On name match — auto-fill fields then check for open shifts
-        $('#mpSearch').on('input', function() {
-            const selectedName = $(this).val();
-            const match = manpowerData.find(item => item.name === selectedName);
+        // 2. On name select — auto-fill fields then check for open shifts
+        $('#mpSearch').on('change', function() {
+            const $selected  = $(this).find('option:selected');
+            const idx        = $(this).val();
+            const employeeId = $selected.data('employee-id');
 
-            if (match) {
-                $('#opDrID').val(match.employee_id);
-                $('#opDrIdx').val(match.idx);
-                checkOpenShifts(match.employee_id);
+            if (idx) {
+                $('#opDrID').val(employeeId);
+                $('#opDrIdx').val(idx);
+                checkOpenShifts(employeeId);
             } else {
                 $('#opDrID').val('');
                 $('#opDrIdx').val('');
