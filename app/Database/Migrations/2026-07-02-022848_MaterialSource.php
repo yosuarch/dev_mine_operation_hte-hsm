@@ -4,41 +4,38 @@ namespace App\Database\Migrations;
 
 use CodeIgniter\Database\Migration;
 
-class PsiSpotingPosition extends Migration
+class MaterialSource extends Migration
 {
-
-    // common info
-    protected $table = 'psi_spoting_position';
+    protected $table   = 'material_source';
     protected $DBGroup = 'appsDBGroup';
 
     public function up()
     {
-        // create table
+        // add table fields
         $this->forge->addField([
             'idx' => [
                 'type' => 'int',
-                'constraint' => 3,
+                'constraint' => 4,
                 'unsigned' => true,
                 'auto_increment' => true,
+                'comment' => 'this is primary key',
             ],
-            'code' => [
+            'source' => [
                 'type' => 'varchar',
-                'constraint' => 32,
+                'constraint' => 64,
                 'null' => false,
+                'comment' => 'known material sources',
             ],
         ]);
-
-        // table attribute
         $this->forge->addPrimaryKey('idx');
-        $this->forge->addUniqueKey('code', "uq_" . $this->table . '_idx');
-
-        // create the table
-        $this->forge->createTable($this->table);
+        $this->forge->createTable($this->table, true, [
+            'comment' => 'known material sources'
+        ]);
     }
 
     public function down()
     {
         // drop the table
-        $this->forge->dropTable($this->table);
+        $this->forge->dropTable($this->table, true);
     }
 }

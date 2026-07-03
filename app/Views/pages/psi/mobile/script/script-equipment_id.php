@@ -17,11 +17,8 @@
                 data: { type_idx: typeIdx },
                 dataType: 'json',
                 success: function(response) {
-                    let options = '<option value="">Select Equipment ID</option>';
-                    response.forEach(function(item) {
-                        options += `<option value="${item.idx}" data-where-index="${item.where_index}">${item.equipment_id}</option>`;
-                    });
-                    $equipID.html(options).prop('disabled', false);
+                    // Options are server-rendered — just inject
+                    $equipID.html(response.html).prop('disabled', false);
                 },
                 error: function(xhr, status, error) {
                     console.error("AJAX Error: ", error);

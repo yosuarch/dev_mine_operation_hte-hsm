@@ -9,7 +9,7 @@ class ManPowerRole extends Migration
 
     // common info
     protected $table = 'mp_role';
-    protected $DBGroup = 'default';
+    protected $DBGroup = 'appsDBGroup';
 
     public function up()
     {

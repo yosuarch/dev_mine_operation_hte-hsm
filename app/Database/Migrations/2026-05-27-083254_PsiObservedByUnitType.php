@@ -9,7 +9,7 @@ class PsiObservedByUnitType extends Migration
 
     // common info
     protected $table = 'psi_observed_by_unit_type';
-    protected $DBGroup = 'default';
+    protected $DBGroup = 'appsDBGroup';
 
     public function up()
     {

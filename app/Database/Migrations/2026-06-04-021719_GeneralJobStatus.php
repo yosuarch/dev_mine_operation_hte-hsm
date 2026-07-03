@@ -9,7 +9,7 @@ class GeneralJobStatus extends Migration
 
     // common info
     protected $table = 'general_job_status';
-    protected $DBGroup = 'default';
+    protected $DBGroup = 'appsDBGroup';
 
     public function up()
     {

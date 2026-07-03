@@ -4,46 +4,45 @@ namespace App\Database\Migrations;
 
 use CodeIgniter\Database\Migration;
 
-class OHSEDangerCode extends Migration
+class MaterialCategory extends Migration
 {
 
-    // common info
-    protected $table = 'ohse_danger_code';
+    protected $table   = 'material_category';
     protected $DBGroup = 'appsDBGroup';
 
     public function up()
     {
-        // generate table
+        // add table fields
         $this->forge->addField([
             'idx' => [
                 'type' => 'int',
-                'constraint' => 3,
+                'constraint' => 4,
                 'unsigned' => true,
                 'auto_increment' => true,
+                'comment' => 'this is primary key',
             ],
-            'code' => [
+            'material' => [
                 'type' => 'varchar',
-                'constraint' => 5,
+                'constraint' => 64,
                 'null' => false,
+                'comment' => 'this field is all the material list, it should be update by Mine Plan Engineer in the future'
             ],
             'description' => [
                 'type' => 'text',
                 'null' => false,
-                'comment' => 'put the OHSE danger code in this column. the description is MUST FOLLOW what OHSE says',
+                'default' => '0',
+                'comment' => 'this is the material description',
             ],
         ]);
-
-        // table attribute
         $this->forge->addPrimaryKey('idx');
-        $this->forge->addUniqueKey('code', "uq_" . $this->table . '_idx');
-
-        // create the table
-        $this->forge->createTable($this->table);
+        $this->forge->createTable($this->table, true, [
+            'comment' => 'known material category'
+        ]);
     }
 
     public function down()
     {
         // drop the table
-        $this->forge->dropTable($this->table);
+        $this->forge->dropTable($this->table, true);
     }
 }

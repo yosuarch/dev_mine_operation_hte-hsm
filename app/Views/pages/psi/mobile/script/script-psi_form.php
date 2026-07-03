@@ -83,95 +83,12 @@
                 data: { equip_idx: whereIndex },
                 dataType: 'json',
                 success: function(response) {
-                    const $container = $('#psiFormItems');
-
-                    if (!response.length) {
-                        $container.html('<p class="text-muted mb-0 small">No checklist found for this equipment.</p>');
-                        return;
+                    // Checklist markup (incl. empty state) is server-rendered — just inject
+                    $('#psiFormItems').html(response.html);
+                    if (response.count > 0) {
+                        $('#psiProgressWrap').show();
+                        updateProgress();
                     }
-
-                    function hazardBorder(code) {
-                        if (code === 'AA') return 'border-danger';
-                        if (code === 'A')  return 'border-warning';
-                        return 'border-success';
-                    }
-
-                    const groups = {};
-                    const groupOrder = [];
-                    response.forEach(function(item) {
-                        const pos = item.spot_position || 'GENERAL';
-                        if (!groups[pos]) { groups[pos] = []; groupOrder.push(pos); }
-                        groups[pos].push(item);
-                    });
-
-                    let html = '';
-                    groupOrder.forEach(function(position) {
-                        html += `
-                            <div class="d-flex align-items-center justify-content-between mt-4 mb-2">
-                                <span class="text-uppercase fw-bold"
-                                      style="font-size:0.68rem;letter-spacing:0.12em;color:var(--bs-secondary-color);">
-                                    ${position}
-                                </span>
-                                <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle"
-                                      style="font-size:0.6rem;">
-                                    ${groups[position].length} items
-                                </span>
-                            </div>`;
-
-                        groups[position].forEach(function(item) {
-                            const border = hazardBorder(item.hazard_code);
-                            html += `
-                                <div class="psi-item-card position-relative d-flex flex-column p-3 mb-2 rounded-3 border-start border-3 ${border}">
-
-                                    <span id="status-${item.idx}"
-                                          class="position-absolute top-0 end-0 mt-2 me-2 badge rounded-pill"
-                                          style="font-size:0.6rem;background:var(--bs-secondary-bg);color:var(--bs-secondary-color);">
-                                        pending
-                                    </span>
-
-                                    <p class="fw-semibold pe-4 mb-3 lh-sm" style="font-size:1rem;">${item.check_part}</p>
-
-                                    <div class="btn-group w-100 mb-2">
-                                        <input type="radio" class="btn-check" name="psi-item-${item.idx}"
-                                               id="good-${item.idx}" autocomplete="off">
-                                        <label class="btn btn-outline-success py-2 fw-semibold"
-                                               for="good-${item.idx}" style="font-size:0.9rem;">
-                                            ✓&nbsp; Normal
-                                        </label>
-                                        <input type="radio" class="btn-check" name="psi-item-${item.idx}"
-                                               id="bad-${item.idx}" autocomplete="off">
-                                        <label class="btn btn-outline-danger py-2 fw-semibold"
-                                               for="bad-${item.idx}" style="font-size:0.9rem;">
-                                            ⚠&nbsp; Not-Normal
-                                        </label>
-                                    </div>
-
-                                    <small class="text-muted" style="font-size:0.7rem;">
-                                        ${item.hazard_code} &mdash; ${item.hazard_code_description}
-                                    </small>
-
-                                    <div id="note-wrap-${item.idx}" class="mt-3 pt-2 border-top border-danger border-opacity-25"
-                                         style="display:none;">
-                                        <small class="text-danger fw-bold d-block mb-1" style="font-size:0.72rem;">
-                                            &#9888; Note is required for not-normal items
-                                        </small>
-                                        <textarea
-                                            class="form-control"
-                                            id="note-${item.idx}"
-                                            name="psi-note-${item.idx}"
-                                            data-check-part="${item.check_part}"
-                                            placeholder="Required — describe the issue..."
-                                            rows="2"
-                                            style="font-size:0.95rem;resize:none;overflow:hidden;"></textarea>
-                                        <div class="invalid-feedback">Please describe the issue before submitting.</div>
-                                    </div>
-                                </div>`;
-                        });
-                    });
-
-                    $container.html(html);
-                    $('#psiProgressWrap').show();
-                    updateProgress();
                 },
                 error: function() {
                     $('#psiFormItems').html('<p class="text-danger mb-0 small">Failed to load checklist. Please try again.</p>');

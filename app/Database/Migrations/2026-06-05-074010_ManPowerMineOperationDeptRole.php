@@ -8,7 +8,7 @@ class ManPowerMineOperationDeptRole extends Migration
 {
     // common info
     protected $table = 'mp_mine_operation_dept_role';
-    protected $DBGroup = 'default';
+    protected $DBGroup = 'appsDBGroup';
 
     public function up()
     {

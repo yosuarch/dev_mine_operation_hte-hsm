@@ -8,7 +8,7 @@ class ManPowerName extends Migration
 {
     // common info
     protected $table = 'mp_list';
-    protected $DBGroup = 'default';
+    protected $DBGroup = 'appsDBGroup';
 
     public function up()
     {

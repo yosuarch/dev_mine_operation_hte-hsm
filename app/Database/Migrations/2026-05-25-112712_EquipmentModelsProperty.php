@@ -8,7 +8,7 @@ class EquipmentModelsProperty extends Migration
 {
     // common info
     protected $table = 'equipment_models_property';
-    protected $DBGroup = 'default';
+    protected $DBGroup = 'appsDBGroup';
 
     public function up()
     {

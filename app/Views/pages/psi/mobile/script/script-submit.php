@@ -201,23 +201,8 @@
 
                     bootstrap.Modal.getInstance(document.getElementById('summaryModal')).hide();
 
-                    $('body').append(`
-                        <div class="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center"
-                             style="background:rgba(0,0,0,0.65);z-index:2000;backdrop-filter:blur(4px);" id="psiSuccessOverlay">
-                            <div class="rounded-4 shadow-lg p-5 text-center mx-3" style="max-width:360px;background:var(--bs-body-bg);">
-                                <div class="text-success mb-3">
-                                    <i class="fas fa-circle-check" style="font-size:3.5rem;"></i>
-                                </div>
-                                <h4 class="fw-bold mb-2">P2H Submitted!</h4>
-                                <p class="text-muted mb-4 small">
-                                    Your inspection report has been recorded.<br>Have a safe shift!
-                                </p>
-                                <button class="btn btn-primary btn-lg px-5 fw-bold" onclick="location.reload()">
-                                    Start New Form
-                                </button>
-                            </div>
-                        </div>
-                    `);
+                    // Overlay is pre-rendered in the view — just show it
+                    $('#psiSuccessOverlay').css('display', 'flex');
                 },
                 error: function(xhr) {
                     $btn.prop('disabled', false).html('Confirm &amp; Submit');
@@ -228,16 +213,10 @@
                         if (resp && resp.csrf_hash) $('[name="csrf_test_name"]').val(resp.csrf_hash);
                     } catch(e) {}
 
-                    // Show error message below modal footer buttons
+                    // Error alert is pre-rendered in the modal — just show it
                     let msg = 'Submission failed. Please try again.';
                     try { msg = JSON.parse(xhr.responseText).message || msg; } catch(e) {}
-                    if (!$('#psiSubmitErrorWrap').length) {
-                        $('.modal-footer').before(
-                            `<div class="px-3 pb-2" id="psiSubmitErrorWrap">
-                                <div class="alert alert-danger py-2 small mb-0" id="psiSubmitError"></div>
-                             </div>`
-                        );
-                    }
+                    $('#psiSubmitErrorWrap').removeClass('d-none');
                     $('#psiSubmitError').text(msg);
                 }
             });

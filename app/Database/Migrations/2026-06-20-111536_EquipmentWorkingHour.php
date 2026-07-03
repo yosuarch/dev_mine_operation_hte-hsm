@@ -8,7 +8,7 @@ class EquipmentWorkingHour extends Migration
 {
     // common info
     protected $table = 'wh_recording';
-    protected $DBGroup = 'default';
+    protected $DBGroup = 'appsDBGroup';
 
     public function up()
     {

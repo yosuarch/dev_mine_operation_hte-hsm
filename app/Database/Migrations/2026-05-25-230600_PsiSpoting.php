@@ -4,12 +4,12 @@ namespace App\Database\Migrations;
 
 use CodeIgniter\Database\Migration;
 
-class PsiAdtSpoting extends Migration
+class PsiSpoting extends Migration
 {
 
     // common info
     protected $table = 'psi_observed_item';
-    protected $DBGroup = 'default';
+    protected $DBGroup = 'appsDBGroup';
 
     public function up()
     {

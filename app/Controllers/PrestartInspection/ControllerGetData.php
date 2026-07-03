@@ -85,7 +85,11 @@ class ControllerGetData extends BaseController
             $cache->save($cacheKey, $equipType, 3600);
         }
 
-        return $this->response->setJSON($equipType);
+        return $this->response->setJSON([
+            'count' => count($equipType),
+            'data'  => $equipType,
+            'html'  => view('pages/psi/mobile/partial/equipment-type-options', ['types' => $equipType]),
+        ]);
     }
 
     public function getEquipmentID()
@@ -109,7 +113,11 @@ class ControllerGetData extends BaseController
             $cache->save($cacheKey, $result, 3600);
         }
 
-        return $this->response->setJSON($result);
+        return $this->response->setJSON([
+            'count' => count($result),
+            'data'  => $result,
+            'html'  => view('pages/psi/mobile/partial/equipment-id-options', ['units' => $result]),
+        ]);
     }
 
     public function getEmptyPSIForm()
@@ -132,6 +140,10 @@ class ControllerGetData extends BaseController
             $cache->save($cacheKey, $result, 3600);
         }
 
-        return $this->response->setJSON($result);
+        return $this->response->setJSON([
+            'count' => count($result),
+            'data'  => $result,
+            'html'  => view('pages/psi/mobile/partial/psi-checklist', ['items' => $result]),
+        ]);
     }
 }

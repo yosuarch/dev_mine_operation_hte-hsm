@@ -9,7 +9,7 @@ class PsiRecord extends Migration
 
     // common info
     protected $table = 'psi_record';
-    protected $DBGroup = 'default';
+    protected $DBGroup = 'appsDBGroup';
 
     public function up()
     {

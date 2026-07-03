@@ -10,7 +10,7 @@ class GeneralInfo extends Migration
 
     // common information
     protected $table = 'site_code';
-    protected $DBGroup = 'default';
+    protected $DBGroup = 'appsDBGroup';
 
     public function up()
     {

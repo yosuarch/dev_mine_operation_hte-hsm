@@ -7,6 +7,18 @@ use App\Controllers\BaseController;
 
 class ControllerOperatorDriver extends BaseController
 {
+    /**
+     * Equipment types (view_unique_equipment_type.idx) that record hauling
+     * activity in dumptruck_activity_record: 1 = ADT, 6 = DUMP TRUCK.
+     * Stage 1 — other equipment types will get their own activity tables later.
+     */
+    private const DUMPTRUCK_TYPE_IDX = [1, 6];
+
+    /**
+     * Equipment types that can load a hauler: 3 = EXCA, 10 = WHEEL LOADER.
+     */
+    private const LOADER_TYPE_IDX = [3, 10];
+
     public function index()
     {
         $data = ['pageTitle' => 'Operator-Driver | PSI'];
@@ -82,6 +94,46 @@ class ControllerOperatorDriver extends BaseController
     private function redisKey(int $employeeId, int $equipIdx): string
     {
         return "psi_open_shift:{$employeeId}:{$equipIdx}";
+    }
+
+    /**
+     * Hauling trips recorded by this driver on this equipment during the open
+     * shift. Read-only; joins mirror view_dumptruck_activity but filter on the
+     * FK columns of the base table (the view only exposes display labels).
+     */
+    private function fetchDumptruckActivities(\CodeIgniter\Database\BaseConnection $db, array $s): array
+    {
+        return $db->query(
+            "SELECT dar.idx,
+                    dar.time,
+                    dar.loader_id               AS loader_idx,
+                    CONCAT(er.text_code, er.num_code) AS loader_label,
+                    dar.loading_area            AS from_idx,
+                    ms_from.source              AS mat_source,
+                    dar.loading_area_note       AS mat_source_note,
+                    dar.dumping_area            AS dest_idx,
+                    ms_dest.source              AS mat_destination,
+                    dar.dumping_area_note       AS mat_dest_note,
+                    dar.material_category       AS mat_cat_idx,
+                    mc.material                 AS mat_category,
+                    dar.material_sub_category   AS sub_mat_idx,
+                    msc.sub_material            AS sub_material,
+                    dar.material_note_by_driver AS material_note,
+                    dar.driver_note             AS driver_note
+             FROM dumptruck_activity_record dar
+             LEFT JOIN equipment_register er         ON dar.loader_id             = er.idx
+             LEFT JOIN material_source ms_from       ON dar.loading_area          = ms_from.idx
+             LEFT JOIN material_source ms_dest       ON dar.dumping_area          = ms_dest.idx
+             LEFT JOIN material_category mc          ON dar.material_category     = mc.idx
+             LEFT JOIN material_sub_category msc     ON dar.material_sub_category = msc.idx
+             WHERE dar.hauler_id      = ?
+               AND dar.hauler_drvr_id = ?
+               AND dar.date           = ?
+               AND dar.shift          = ?
+               AND dar.deleted_at IS NULL
+             ORDER BY dar.time ASC",
+            [$s['equipment_idx'], $s['operator_idx'], $s['date'], $s['shift']]
+        )->getResultArray();
     }
 
     // ── POST /operator-driver/submit-psi ─────────────────────────────────────
@@ -326,7 +378,7 @@ class ControllerOperatorDriver extends BaseController
     {
         $employeeId = (int) $this->request->getGet('employee_id');
         if (!$employeeId) {
-            return $this->response->setJSON(['openShifts' => [], 'csrf_hash' => csrf_hash()]);
+            return $this->response->setJSON(['count' => 0, 'openShifts' => [], 'html' => '', 'csrf_hash' => csrf_hash()]);
         }
 
         $redis   = $this->redis();
@@ -343,7 +395,7 @@ class ControllerOperatorDriver extends BaseController
         } while ($iterator != 0);
 
         if (empty($rawKeys)) {
-            return $this->response->setJSON(['openShifts' => [], 'csrf_hash' => csrf_hash()]);
+            return $this->response->setJSON(['count' => 0, 'openShifts' => [], 'html' => '', 'csrf_hash' => csrf_hash()]);
         }
 
         // Batch-fetch values
@@ -355,12 +407,14 @@ class ControllerOperatorDriver extends BaseController
             }
         }
 
-        // Batch-lookup equipment labels
+        // Batch-lookup equipment labels and types
+        $db       = \Config\Database::connect();
         $equipIds = array_unique(array_column($sessions, 'equipment_idx'));
         $equipMap = [];
+        $typeMap  = [];
         if (!empty($equipIds)) {
             $placeholders = implode(',', array_fill(0, count($equipIds), '?'));
-            $rows = \Config\Database::connect()->query(
+            $rows = $db->query(
                 "SELECT idx, CONCAT(text_code, num_code) AS label
                  FROM equipment_register WHERE idx IN ({$placeholders})",
                 $equipIds
@@ -368,18 +422,236 @@ class ControllerOperatorDriver extends BaseController
             foreach ($rows as $row) {
                 $equipMap[(int)$row['idx']] = $row['label'];
             }
+
+            $rows = $db->query(
+                "SELECT idx, where_index FROM view_equipment_id_list WHERE idx IN ({$placeholders})",
+                $equipIds
+            )->getResultArray();
+            foreach ($rows as $row) {
+                $typeMap[(int)$row['idx']] = (int) $row['where_index'];
+            }
         }
 
         $openShifts = [];
         foreach ($sessions as $s) {
             $s['equipment_label'] = $equipMap[$s['equipment_idx']] ?? 'Unknown';
+            $s['is_dumptruck']    = in_array($typeMap[$s['equipment_idx']] ?? 0, self::DUMPTRUCK_TYPE_IDX, true);
+            $s['activities']      = $s['is_dumptruck'] ? $this->fetchDumptruckActivities($db, $s) : [];
             $openShifts[] = $s;
         }
 
+        // New-trip form lookups — only needed when a dumptruck shift is present
+        $formLookups = null;
+        if (array_filter(array_column($openShifts, 'is_dumptruck'))) {
+            $formLookups = $this->activityFormLookups($db);
+        }
+
+        // Server-rendered section — client only injects and toggles it
+        $html = empty($openShifts)
+            ? ''
+            : view('pages/psi/mobile/partial/open-shift', [
+                'openShifts'  => $openShifts,
+                'formLookups' => $formLookups,
+            ]);
+
         return $this->response->setJSON([
+            'count'      => count($openShifts),
             'openShifts' => $openShifts,
+            'html'       => $html,
             'csrf_hash'  => csrf_hash(),
         ]);
+    }
+
+    private function activityFormLookups(\CodeIgniter\Database\BaseConnection $db): array
+    {
+        $loaderPlaceholders = implode(',', array_fill(0, count(self::LOADER_TYPE_IDX), '?'));
+
+        return [
+            'loaders' => $db->query(
+                "SELECT idx, equipment_id FROM view_equipment_id_list
+                 WHERE where_index IN ({$loaderPlaceholders}) ORDER BY equipment_id ASC",
+                self::LOADER_TYPE_IDX
+            )->getResultArray(),
+            'matCats' => $db->table('material_category')
+                ->select('idx, material')->orderBy('idx', 'ASC')->get()->getResultArray(),
+            'subMats' => $db->table('material_sub_category')
+                ->select('idx, material, sub_material')->orderBy('sub_material', 'ASC')->get()->getResultArray(),
+            'sources' => $db->table('material_source')
+                ->select('idx, source')->orderBy('source', 'ASC')->get()->getResultArray(),
+        ];
+    }
+
+    /**
+     * Loads the open-shift Redis session named by the request, or null.
+     * Identity (driver, equipment, date, shift) always comes from this session —
+     * never from client-supplied fields.
+     */
+    private function openShiftSession(int $employeeId, int $equipIdx): ?array
+    {
+        if (!$employeeId || !$equipIdx) {
+            return null;
+        }
+        $val = $this->redis()->get($this->redisKey($employeeId, $equipIdx));
+
+        return $val ? json_decode($val, true) : null;
+    }
+
+    /** Re-rendered trip list + count, shared by submit/undo activity responses. */
+    private function activityListResponse(array $activities)
+    {
+        return $this->response->setJSON([
+            'status'    => 'ok',
+            'count'     => count($activities),
+            'html'      => view('pages/psi/mobile/partial/activity-trips', ['activities' => $activities]),
+            'csrf_hash' => csrf_hash(),
+        ]);
+    }
+
+    // ── POST /operator-driver/submit-activity ────────────────────────────────
+
+    public function submitActivity()
+    {
+        $json = $this->request->getJSON(true);
+        if (!$json) {
+            return $this->response->setStatusCode(400)->setJSON([
+                'status' => 'error', 'message' => 'Invalid request body.', 'csrf_hash' => csrf_hash(),
+            ]);
+        }
+
+        $s = $this->openShiftSession((int) ($json['employee_id'] ?? 0), (int) ($json['equipment_idx'] ?? 0));
+        if (!$s) {
+            return $this->response->setStatusCode(404)->setJSON([
+                'status' => 'error', 'message' => 'No open shift found. It may have already been closed.', 'csrf_hash' => csrf_hash(),
+            ]);
+        }
+
+        $time         = trim($json['time'] ?? '');
+        $loaderIdx    = (int) ($json['loader_idx'] ?? 0);
+        $matCat       = (int) ($json['mat_cat'] ?? 0);
+        $subMat       = (int) ($json['sub_mat'] ?? 0);
+        $fromIdx      = (int) ($json['from_idx'] ?? 0);
+        $destIdx      = (int) ($json['dest_idx'] ?? 0);
+        $fromNote     = trim($json['from_note']     ?? '');
+        $destNote     = trim($json['dest_note']     ?? '');
+        $materialNote = trim($json['material_note'] ?? '');
+        $driverNote   = trim($json['driver_note']   ?? '');
+
+        if (!preg_match('/^\d{2}:\d{2}(:\d{2})?$/', $time) || !$matCat || !$fromIdx || !$destIdx) {
+            return $this->response->setStatusCode(422)->setJSON([
+                'status' => 'error', 'message' => 'Missing or invalid required fields.', 'csrf_hash' => csrf_hash(),
+            ]);
+        }
+        if (mb_strlen($fromNote) > 64 || mb_strlen($destNote) > 64) {
+            return $this->response->setStatusCode(422)->setJSON([
+                'status' => 'error', 'message' => 'Area notes must be 64 characters or less.', 'csrf_hash' => csrf_hash(),
+            ]);
+        }
+
+        $db = \Config\Database::connect();
+
+        // FK validation against lookup tables
+        $catOk = $db->table('material_category')->where('idx', $matCat)->countAllResults() === 1;
+        $srcOk = $db->table('material_source')->whereIn('idx', array_unique([$fromIdx, $destIdx]))->countAllResults()
+                 === count(array_unique([$fromIdx, $destIdx]));
+        $subOk = !$subMat || $db->table('material_sub_category')
+                ->where('idx', $subMat)->where('material', $matCat)->countAllResults() === 1;
+
+        $loaderOk = true;
+        if ($loaderIdx) {
+            $loaderPlaceholders = implode(',', array_fill(0, count(self::LOADER_TYPE_IDX), '?'));
+            $loaderOk = (bool) $db->query(
+                "SELECT idx FROM view_equipment_id_list
+                 WHERE idx = ? AND where_index IN ({$loaderPlaceholders})",
+                array_merge([$loaderIdx], self::LOADER_TYPE_IDX)
+            )->getRow();
+        }
+
+        if (!$catOk || !$srcOk || !$subOk || !$loaderOk) {
+            return $this->response->setStatusCode(422)->setJSON([
+                'status' => 'error', 'message' => 'One or more selected values are invalid.', 'csrf_hash' => csrf_hash(),
+            ]);
+        }
+
+        // Transaction keeps the re-read on the primary — DB host is MaxScale
+        // (read/write split), so a bare SELECT right after the INSERT can hit
+        // a replica that hasn't replicated the new row yet.
+        $db->transStart();
+        $db->table('dumptruck_activity_record')->insert([
+            'date'                    => $s['date'],
+            'shift'                   => $s['shift'],
+            'time'                    => strlen($time) === 5 ? $time . ':00' : $time,
+            'loader_id'               => $loaderIdx ?: null,
+            'hauler_id'               => $s['equipment_idx'],
+            'hauler_drvr_id'          => $s['operator_idx'],
+            'loading_area'            => $fromIdx,
+            'loading_area_note'       => $fromNote !== '' ? $fromNote : null,
+            'dumping_area'            => $destIdx,
+            'dumping_area_note'       => $destNote !== '' ? $destNote : null,
+            'material_category'       => $matCat,
+            'material_sub_category'   => $subMat ?: null,
+            'material_note_by_driver' => $materialNote !== '' ? $materialNote : null,
+            'driver_note'             => $driverNote !== '' ? $driverNote : null,
+            'created_at'              => date('Y-m-d H:i:s'),
+        ]);
+        $activities = $this->fetchDumptruckActivities($db, $s);
+        $db->transComplete();
+
+        if (!$db->transStatus()) {
+            return $this->response->setStatusCode(500)->setJSON([
+                'status' => 'error', 'message' => 'Database error. Please try again.', 'csrf_hash' => csrf_hash(),
+            ]);
+        }
+
+        return $this->activityListResponse($activities);
+    }
+
+    // ── POST /operator-driver/undo-activity ──────────────────────────────────
+
+    public function undoActivity()
+    {
+        $json = $this->request->getJSON(true);
+        if (!$json) {
+            return $this->response->setStatusCode(400)->setJSON([
+                'status' => 'error', 'message' => 'Invalid request body.', 'csrf_hash' => csrf_hash(),
+            ]);
+        }
+
+        // Undo is allowed for as long as the shift is open — closing the shift
+        // deletes the Redis session, which ends the undo window automatically.
+        $s = $this->openShiftSession((int) ($json['employee_id'] ?? 0), (int) ($json['equipment_idx'] ?? 0));
+        if (!$s) {
+            return $this->response->setStatusCode(404)->setJSON([
+                'status' => 'error', 'message' => 'No open shift found. It may have already been closed.', 'csrf_hash' => csrf_hash(),
+            ]);
+        }
+
+        $tripIdx = (int) ($json['trip_idx'] ?? 0);
+        $db      = \Config\Database::connect();
+
+        // Transaction keeps the re-read on the primary (MaxScale read/write split)
+        $db->transStart();
+
+        // Trip must belong to this exact open session and not be deleted yet
+        $db->table('dumptruck_activity_record')
+            ->where('idx',            $tripIdx)
+            ->where('hauler_id',      $s['equipment_idx'])
+            ->where('hauler_drvr_id', $s['operator_idx'])
+            ->where('date',           $s['date'])
+            ->where('shift',          $s['shift'])
+            ->where('deleted_at IS NULL', null, false)
+            ->update(['deleted_at' => date('Y-m-d H:i:s')]);
+
+        $affected   = $db->affectedRows();
+        $activities = $affected ? $this->fetchDumptruckActivities($db, $s) : [];
+        $db->transComplete();
+
+        if (!$affected) {
+            return $this->response->setStatusCode(404)->setJSON([
+                'status' => 'error', 'message' => 'Trip not found or already removed.', 'csrf_hash' => csrf_hash(),
+            ]);
+        }
+
+        return $this->activityListResponse($activities);
     }
 
     // ── POST /operator-driver/submit-hm-end ──────────────────────────────────

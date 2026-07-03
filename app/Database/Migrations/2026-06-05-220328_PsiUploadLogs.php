@@ -9,7 +9,7 @@ class PsiUploadLogs extends Migration
 
     // common info
     protected $table = 'psi_record_upload_results';
-    protected $DBGroup = 'default';
+    protected $DBGroup = 'appsDBGroup';
 
     public function up()
     {

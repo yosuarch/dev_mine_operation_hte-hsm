@@ -12,6 +12,7 @@ use CodeIgniter\Filters\InvalidChars;
 use CodeIgniter\Filters\PageCache;
 use CodeIgniter\Filters\PerformanceMetrics;
 use CodeIgniter\Filters\SecureHeaders;
+use App\Filters\AjaxOnlyFilter;
 use App\Filters\AuthRedirectFilter;
 use App\Filters\PostFilterLogin;
 
@@ -35,7 +36,8 @@ class Filters extends BaseFilters
         'cors'          => Cors::class,
         'forcehttps'    => ForceHTTPS::class,
         'pagecache'     => PageCache::class,
-        'performance'   => PerformanceMetrics::class
+        'performance'   => PerformanceMetrics::class,
+        'ajaxonly'      => AjaxOnlyFilter::class,
     ];
 
     /**
@@ -79,6 +81,8 @@ class Filters extends BaseFilters
                 'except' => [
                     'operator-driver/submit-psi',
                     'operator-driver/submit-hm-end',
+                    'operator-driver/submit-activity',
+                    'operator-driver/undo-activity',
                 ],
             ],
             // 'invalidchars',

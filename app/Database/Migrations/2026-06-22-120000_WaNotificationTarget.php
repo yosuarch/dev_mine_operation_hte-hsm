@@ -7,7 +7,7 @@ use CodeIgniter\Database\Migration;
 class WaNotificationTarget extends Migration
 {
     protected $table   = 'wa_notification_target';
-    protected $DBGroup = 'default';
+    protected $DBGroup = 'appsDBGroup';
 
     public function up()
     {

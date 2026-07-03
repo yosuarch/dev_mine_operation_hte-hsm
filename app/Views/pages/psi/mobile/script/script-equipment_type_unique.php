@@ -5,11 +5,8 @@
             method: 'GET',
             dataType: 'json',
             success: function(response) {
-                let options = '<option selected value="">Select Equipment Type</option>';
-                response.forEach(function(item) {
-                    options += `<option value="${item.idx}">${item.abrvtn}</option>`;
-                });
-                $('#equipType').html(options);
+                // Options are server-rendered — just inject
+                $('#equipType').html(response.html);
             },
             error: function(xhr, status, error) {
                 console.error("AJAX Error: ", error);

@@ -10,7 +10,7 @@ class PsiRecordValidator extends Migration
 
     // common info
     protected $table = 'psi_record_validator';
-    protected $DBGroup = 'default';
+    protected $DBGroup = 'appsDBGroup';
 
     public function up()
     {

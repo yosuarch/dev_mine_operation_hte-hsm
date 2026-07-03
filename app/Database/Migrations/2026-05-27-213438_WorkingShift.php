@@ -9,7 +9,7 @@ class WorkingShift extends Migration
 
     // common info
     protected $table = 'general_working_shift';
-    protected $DBGroup = 'default';
+    protected $DBGroup = 'appsDBGroup';
 
     public function up()
     {

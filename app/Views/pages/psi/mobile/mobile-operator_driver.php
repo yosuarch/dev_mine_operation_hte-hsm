@@ -59,6 +59,127 @@
         color: var(--bs-body-color);
     }
 
+    /* ── Searchable name dropdown (combobox) ─────────────── */
+    .mp-combo-input {
+        padding-left: 2.7rem;
+        padding-right: 4.6rem;
+    }
+
+    .mp-combo-search-icon {
+        position: absolute;
+        left: 1rem;
+        top: 1.6rem;
+        transform: translateY(-50%);
+        color: var(--bs-secondary-color);
+        font-size: 0.9rem;
+        pointer-events: none;
+        z-index: 5;
+    }
+
+    .mp-combo-chevron {
+        position: absolute;
+        right: 1rem;
+        top: 1.6rem;
+        transform: translateY(-50%);
+        color: var(--bs-secondary-color);
+        font-size: 0.8rem;
+        pointer-events: none;
+        transition: transform 0.2s ease;
+        z-index: 5;
+    }
+
+    .mp-combo.open .mp-combo-chevron {
+        transform: translateY(-50%) rotate(180deg);
+    }
+
+    .mp-combo-clear {
+        position: absolute;
+        right: 2.6rem;
+        top: 1.6rem;
+        transform: translateY(-50%);
+        width: 1.7rem;
+        height: 1.7rem;
+        border: 0;
+        border-radius: 50%;
+        background: var(--bs-secondary-bg);
+        color: var(--bs-secondary-color);
+        font-size: 0.7rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 5;
+    }
+
+    .mp-combo-menu {
+        position: absolute;
+        top: calc(3.2rem + 6px);
+        left: 0;
+        right: 0;
+        z-index: 60;
+        background: var(--bs-body-bg);
+        border: 1px solid var(--bs-border-color-translucent);
+        border-radius: 0.75rem;
+        box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12);
+        overflow: hidden;
+    }
+
+    [data-bs-theme="dark"] .mp-combo-menu {
+        box-shadow: 0 12px 28px rgba(0, 0, 0, 0.45);
+    }
+
+    .mp-combo-list {
+        max-height: 272px;
+        overflow-y: auto;
+        overscroll-behavior: contain;
+    }
+
+    .mp-combo-option {
+        padding: 0.65rem 1rem;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem;
+    }
+
+    .mp-combo-option + .mp-combo-option {
+        border-top: 1px solid var(--bs-border-color-translucent);
+    }
+
+    .mp-combo-option:hover,
+    .mp-combo-option.active {
+        background: var(--bs-secondary-bg);
+    }
+
+    .mp-combo-option .mp-name {
+        font-weight: 600;
+        font-size: 0.98rem;
+    }
+
+    .mp-combo-option .mp-id {
+        font-size: 0.75rem;
+        color: var(--bs-secondary-color);
+    }
+
+    .mp-combo-option mark {
+        background: transparent;
+        color: var(--bs-primary);
+        font-weight: 700;
+        padding: 0;
+    }
+
+    .mp-combo-option .mp-check {
+        color: var(--bs-primary);
+        font-size: 0.85rem;
+    }
+
+    .mp-combo-empty {
+        padding: 1.1rem 1rem;
+        text-align: center;
+        color: var(--bs-secondary-color);
+        font-size: 0.9rem;
+    }
+
     /* ── P2H checklist item cards ────────────────────────── */
     .psi-item-card {
         transition: background-color 0.25s ease, box-shadow 0.25s ease;
@@ -138,10 +259,23 @@
 
                     <div class="mb-4">
                         <label for="mpSearch" class="form-label fw-semibold fs-6">Full Name</label>
-                        <input type="text" class="form-control form-control-lg" id="mpSearch" list="mpListOptions"
-                            placeholder="Type your name..." autocomplete="off">
-                        <datalist id="mpListOptions"></datalist>
-                        <div class="invalid-feedback">Please select a valid operator / driver name.</div>
+                        <div id="mpCombo" class="mp-combo position-relative">
+                            <span class="mp-combo-search-icon"><i class="fas fa-magnifying-glass"></i></span>
+                            <input type="text" class="form-control form-control-lg mp-combo-input" id="mpSearch"
+                                placeholder="Search your name..." autocomplete="off"
+                                role="combobox" aria-expanded="false" aria-controls="mpDropdown"
+                                aria-autocomplete="list" aria-haspopup="listbox">
+                            <button type="button" id="mpClearBtn" class="mp-combo-clear" aria-label="Clear selection"
+                                tabindex="-1" style="display:none;">
+                                <i class="fas fa-xmark"></i>
+                            </button>
+                            <span class="mp-combo-chevron"><i class="fas fa-chevron-down"></i></span>
+                            <div id="mpDropdown" class="mp-combo-menu" role="listbox" aria-label="Operator and driver names"
+                                style="display:none;">
+                                <div class="mp-combo-list"></div>
+                            </div>
+                            <div class="invalid-feedback">Please select a valid operator / driver name.</div>
+                        </div>
                     </div>
 
                     <div>
@@ -154,54 +288,9 @@
                 </div>
             </div>
 
-            <!-- OPEN SHIFT SECTION (shown when Redis session detected) -->
-            <div id="openShiftSection" style="display:none;">
-
-                <!-- Equipment picker — shown when operator has 2+ open shifts -->
-                <div id="openShiftPicker" class="card border-0 shadow-sm" style="display:none;">
-                    <div class="card-body p-4">
-                        <p class="section-label mb-1">OPEN SHIFTS</p>
-                        <h5 class="card-title-main mb-1">Select Equipment to Close</h5>
-                        <p class="text-muted mb-4" style="font-size:0.9rem;">
-                            You have multiple open shifts. Pick the equipment you finished using.
-                        </p>
-                        <div id="openShiftPickerList" class="d-flex flex-column gap-2"></div>
-                    </div>
-                </div>
-
-                <!-- HM End form — shown once equipment is determined -->
-                <div id="openShiftHmForm" class="card border-0 shadow-sm" style="display:none;">
-                    <div class="card-body p-4">
-                        <p class="section-label mb-1">END OF SHIFT</p>
-                        <h5 class="card-title-main mb-3">Close Your Shift</h5>
-
-                        <!-- Read-only session summary -->
-                        <div id="openShiftSummary" class="mb-4 p-3 rounded-3"
-                             style="background:var(--bs-secondary-bg);font-size:0.9rem;"></div>
-
-                        <div class="mb-4">
-                            <label for="hmEndInput" class="form-label fw-semibold fs-6">Hour-Meter End</label>
-                            <input type="number" id="hmEndInput" class="form-control form-control-lg"
-                                   min="0" step="0.1" placeholder="e.g. 4789.0">
-                            <div class="invalid-feedback">Must be greater than the starting hour-meter.</div>
-                        </div>
-
-                        <button type="button" id="btnSubmitHmEnd"
-                                class="btn btn-success btn-lg w-100 py-3 fw-bold fs-5">
-                            Close Shift
-                        </button>
-                        <div id="hmEndError" class="alert alert-danger mt-3 d-none small mb-0"></div>
-                    </div>
-                </div>
-
-                <!-- Escape hatch -->
-                <div class="text-center">
-                    <button type="button" id="btnStartNewPsiInstead"
-                            class="btn btn-link text-secondary small">
-                        Start a new P2H instead
-                    </button>
-                </div>
-            </div>
+            <!-- OPEN SHIFT SECTION — server-rendered by /operator-driver/check-open-shift,
+                 injected here when a Redis session is detected -->
+            <div id="openShiftSection" class="d-flex flex-column gap-4" style="display:none;"></div>
 
             <!-- VEHICLE DETAILS -->
             <div id="vehicleCard" class="card border-0 shadow-sm">
@@ -277,6 +366,44 @@
     </div>
 </div>
 
+<!-- P2H submitted success overlay (pre-rendered, shown by script-submit) -->
+<div id="psiSuccessOverlay"
+     class="position-fixed top-0 start-0 w-100 h-100 align-items-center justify-content-center"
+     style="display:none;background:rgba(0,0,0,0.65);z-index:2000;backdrop-filter:blur(4px);">
+    <div class="rounded-4 shadow-lg p-5 text-center mx-3"
+         style="max-width:360px;background:var(--bs-body-bg);">
+        <div class="text-success mb-3">
+            <i class="fas fa-circle-check" style="font-size:3.5rem;"></i>
+        </div>
+        <h4 class="fw-bold mb-2">P2H Submitted!</h4>
+        <p class="text-muted mb-4 small">
+            Your inspection report has been recorded.<br>Have a safe shift!
+        </p>
+        <button class="btn btn-primary btn-lg px-5 fw-bold" onclick="location.reload()">
+            Start New Form
+        </button>
+    </div>
+</div>
+
+<!-- Shift-closed success overlay (pre-rendered, shown by script-hm-end) -->
+<div id="hmEndSuccessOverlay"
+     class="position-fixed top-0 start-0 w-100 h-100 align-items-center justify-content-center"
+     style="display:none;background:rgba(0,0,0,0.65);z-index:2000;backdrop-filter:blur(4px);">
+    <div class="rounded-4 shadow-lg p-5 text-center mx-3"
+         style="max-width:360px;background:var(--bs-body-bg);">
+        <div class="text-success mb-3">
+            <i class="fas fa-circle-check" style="font-size:3.5rem;"></i>
+        </div>
+        <h4 class="fw-bold mb-2">Shift Closed!</h4>
+        <p class="text-muted mb-4 small">
+            Hour-meter reading recorded.<br>Have a safe rest!
+        </p>
+        <button class="btn btn-primary btn-lg px-5 fw-bold" onclick="location.reload()">
+            Done
+        </button>
+    </div>
+</div>
+
 <!-- Summary Modal -->
 <div class="modal fade" id="summaryModal" tabindex="-1" aria-labelledby="summaryModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-scrollable">
@@ -326,6 +453,9 @@
                 </div>
 
             </div>
+            <div class="px-3 pb-2 d-none" id="psiSubmitErrorWrap">
+                <div class="alert alert-danger py-2 small mb-0" id="psiSubmitError"></div>
+            </div>
             <div class="modal-footer border-0 pt-0 gap-2">
                 <button type="button" class="btn btn-outline-secondary flex-fill" data-bs-dismiss="modal">
                     Back to Edit
@@ -348,5 +478,6 @@
 <?= $this->include('pages/psi/mobile/script/script-psi_form'); ?>
 <?= $this->include('pages/psi/mobile/script/script-submit'); ?>
 <?= $this->include('pages/psi/mobile/script/script-hm-end'); ?>
+<?= $this->include('pages/psi/mobile/script/script-activity'); ?>
 <?= $this->include('pages/psi/mobile/script/script-color-mode'); ?>
 <?= $this->endSection(); ?>

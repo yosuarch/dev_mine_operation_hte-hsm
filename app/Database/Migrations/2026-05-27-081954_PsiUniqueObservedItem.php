@@ -9,7 +9,7 @@ class PsiUniqueObservedItem extends Migration
 
     // common info
     protected $table = 'psi_unique_observed_item';
-    protected $DBGroup = 'default';
+    protected $DBGroup = 'appsDBGroup';
 
     public function up()
     {

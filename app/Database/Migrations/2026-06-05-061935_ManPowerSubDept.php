@@ -8,7 +8,7 @@ class ManPowerSubDept extends Migration
 {
     // common info
     protected $table = 'mp_sub_dept';
-    protected $DBGroup = 'default';
+    protected $DBGroup = 'appsDBGroup';
 
     public function up()
     {

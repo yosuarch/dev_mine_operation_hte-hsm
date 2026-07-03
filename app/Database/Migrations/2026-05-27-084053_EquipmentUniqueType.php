@@ -9,7 +9,7 @@ class EquipmentUniqueType extends Migration
 
     // common info
     protected $table = 'equipment_unique_type';
-    protected $DBGroup = 'default';
+    protected $DBGroup = 'appsDBGroup';
 
     public function up()
     {
