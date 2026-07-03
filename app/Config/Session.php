@@ -5,6 +5,7 @@ namespace Config;
 use CodeIgniter\Config\BaseConfig;
 use CodeIgniter\Session\Handlers\BaseHandler;
 use CodeIgniter\Session\Handlers\FileHandler;
+use CodeIgniter\Session\Handlers\RedisHandler;
 
 class Session extends BaseConfig
 {
@@ -22,7 +23,7 @@ class Session extends BaseConfig
      *
      * @var class-string<BaseHandler>
      */
-    public string $driver = FileHandler::class;
+    public string $driver = RedisHandler::class;
 
     /**
      * --------------------------------------------------------------------------
@@ -58,7 +59,7 @@ class Session extends BaseConfig
      *
      * IMPORTANT: You are REQUIRED to set a valid save path!
      */
-    public string $savePath = WRITEPATH . 'session';
+    public string $savePath = 'tcp://redis:6379';
 
     /**
      * --------------------------------------------------------------------------
@@ -70,7 +71,7 @@ class Session extends BaseConfig
      * WARNING: If you're using the database driver, don't forget to update
      *          your session table's PRIMARY KEY when changing this setting.
      */
-    public bool $matchIP = false;
+    public bool $matchIP = true;
 
     /**
      * --------------------------------------------------------------------------
@@ -99,7 +100,7 @@ class Session extends BaseConfig
      *
      * DB Group for the database session.
      */
-    public ?string $DBGroup = null;
+    public ?string $DBGroup = 'session';
 
     /**
      * --------------------------------------------------------------------------

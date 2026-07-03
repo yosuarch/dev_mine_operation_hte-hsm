@@ -46,7 +46,7 @@ class Auth extends ShieldAuth
      * --------------------------------------------------------------------
      */
     public array $views = [
-        'login'                       => '\CodeIgniter\Shield\Views\login',
+        'login'                       => 'auth/login',
         'register'                    => '\CodeIgniter\Shield\Views\register',
         'layout'                      => '\CodeIgniter\Shield\Views\layout',
         'action_email_2fa'            => '\CodeIgniter\Shield\Views\email_2fa_show',
@@ -75,11 +75,14 @@ class Auth extends ShieldAuth
      */
     public array $redirects = [
         'register'          => '/',
-        'login'             => '/',
-        'logout'            => 'login',
-        'force_reset'       => '/',
-        'permission_denied' => '/',
-        'group_denied'      => '/',
+        // 'login'             => '/',
+        // 'logout'            => '/',
+        // 'force_reset'       => '/',
+        // 'permission_denied' => '/',
+        // 'group_denied'      => '/',
+        // 'register'              => '/',
+        'login'                 => '/admin-dashboard',
+        'logout'                => '/',
     ];
 
     /**
@@ -157,7 +160,7 @@ class Auth extends ShieldAuth
      * --------------------------------------------------------------------
      * Determines whether users can register for the site.
      */
-    public bool $allowRegistration = true;
+    public bool $allowRegistration = false;
 
     /**
      * --------------------------------------------------------------------
@@ -181,7 +184,7 @@ class Auth extends ShieldAuth
      * could be modified as the only method of login once an account
      * has been set up.
      */
-    public bool $allowMagicLinkLogins = true;
+    public bool $allowMagicLinkLogins = false;
 
     /**
      * --------------------------------------------------------------------
@@ -302,7 +305,9 @@ class Auth extends ShieldAuth
      * For example:
      *     $personalFields = ['firstname', 'lastname'];
      */
-    public array $personalFields = [];
+    public array $personalFields = [
+        // 'username'
+    ];
 
     /**
      * --------------------------------------------------------------------
@@ -389,7 +394,7 @@ class Auth extends ShieldAuth
      * Customize the DB group used for each model
      * --------------------------------------------------------------------
      */
-    public ?string $DBGroup = null;
+    public ?string $DBGroup = 'default';
 
     /**
      * --------------------------------------------------------------------

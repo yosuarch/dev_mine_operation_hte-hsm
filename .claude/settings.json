@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(curl -s -H \"Authorization: ZwzORcqUwWd9_Yhxvm84uhRw+JSrlyhsY5bJMHlenCEviT3r5rmx4Sx0=\" \"https://note.yonako.site/etapi/notes/root/branches\")"
+    ]
+  }
+}
