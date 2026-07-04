@@ -60,7 +60,7 @@
 
         $('#equipID').on('change', function() {
             const equipIdx   = $(this).val();
-            const whereIndex = $(this).find('option:selected').data('where-index');
+            const whereIndex = $(this).data('where-index');
 
             $('#psiProgressWrap').hide();
             $('#psiProgressLabel').text('0 / 0 reviewed');

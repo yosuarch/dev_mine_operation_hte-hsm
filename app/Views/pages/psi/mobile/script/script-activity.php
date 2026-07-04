@@ -9,6 +9,71 @@
         $(this).hide().closest('.card-body').find('.dt-trip-form').slideDown(150);
     });
 
+    // ── Combos for loader / sub-material / loading area / dumping area ────────
+    // Delegated (see script-combobox.php) because a trip form can be re-rendered
+    // per open shift and injected via AJAX — a single bound instance won't do.
+
+    const loaderCombo = initDelegatedCombobox({
+        comboClass: 'dt-loader-combo', inputClass: 'dt-loader-search',
+        dropdownClass: 'dt-loader-dropdown', clearClass: 'dt-loader-clear', valueClass: 'dt-loader',
+        key: l => l.idx, label: l => l.label,
+        matches: (l, query) => l.label.toLowerCase().includes(query),
+        emptyHtml: '<div class="combo-empty">No matching loader</div>',
+        renderOption: renderPlainComboOption
+    });
+
+    const subMatCombo = initDelegatedCombobox({
+        comboClass: 'dt-submat-combo', inputClass: 'dt-submat-search',
+        dropdownClass: 'dt-submat-dropdown', clearClass: 'dt-submat-clear', valueClass: 'dt-submat',
+        key: m => m.idx, label: m => m.label,
+        matches: (m, query) => m.label.toLowerCase().includes(query),
+        emptyHtml: '<div class="combo-empty">No matching sub material</div>',
+        renderOption: renderPlainComboOption
+    });
+
+    const fromCombo = initDelegatedCombobox({
+        comboClass: 'dt-from-combo', inputClass: 'dt-from-search',
+        dropdownClass: 'dt-from-dropdown', clearClass: 'dt-from-clear', valueClass: 'dt-from',
+        key: s => s.idx, label: s => s.label,
+        matches: (s, query) => s.label.toLowerCase().includes(query),
+        emptyHtml: '<div class="combo-empty">No matching area</div>',
+        renderOption: renderPlainComboOption
+    });
+
+    const destCombo = initDelegatedCombobox({
+        comboClass: 'dt-dest-combo', inputClass: 'dt-dest-search',
+        dropdownClass: 'dt-dest-dropdown', clearClass: 'dt-dest-clear', valueClass: 'dt-dest',
+        key: s => s.idx, label: s => s.label,
+        matches: (s, query) => s.label.toLowerCase().includes(query),
+        emptyHtml: '<div class="combo-empty">No matching area</div>',
+        renderOption: renderPlainComboOption
+    });
+
+    function renderPlainComboOption(it, query, isSelected, i) {
+        return `
+            <div class="combo-option${isSelected ? ' active' : ''}" role="option" data-i="${i}"
+                 aria-selected="${isSelected}">
+                <div>${comboHighlight(it.label, query)}</div>
+                ${isSelected ? '<i class="fas fa-check combo-check"></i>' : ''}
+            </div>`;
+    }
+
+    // Seed the loader/from/dest combos of every trip form under $root from their
+    // server-rendered data pools. Called once per injection of partial/open-shift.
+    function initDumptruckActivityCombos($root) {
+        $root.find('.dt-trip-form').each(function() {
+            const $form = $(this);
+            loaderCombo.setItems($form.find('.dt-loader-combo'), comboItemsFromPool($form.find('.dt-loader-pool')));
+
+            const sources = comboItemsFromPool($form.find('.dt-source-pool'));
+            fromCombo.setItems($form.find('.dt-from-combo'), sources);
+            destCombo.setItems($form.find('.dt-dest-combo'), sources);
+
+            // Sub material stays empty/disabled until a material category is picked
+            subMatCombo.setItems($form.find('.dt-submat-combo'), []);
+        });
+    }
+
     // Material chip picked → filter sub-material options from the hidden pool
     $(document).on('change', '.dt-mat-cat input', function() {
         const $form = $(this).closest('.dt-trip-form');
@@ -17,14 +82,20 @@
     });
 
     function filterSubMat($form, catIdx) {
-        const $sel     = $form.find('.dt-submat');
-        const current  = $sel.val();
-        let html       = '<option value="">No sub material</option>';
-        $form.find('.dt-submat-all option[data-material="' + catIdx + '"]').each(function() {
-            html += this.outerHTML;
-        });
-        $sel.html(html).prop('disabled', false);
-        if (current && $sel.find('option[value="' + current + '"]').length) $sel.val(current);
+        const $combo  = $form.find('.dt-submat-combo');
+        const current = $form.find('.dt-submat').val();
+
+        const items = $form.find('.dt-submat-all option[data-material="' + catIdx + '"]')
+            .map(function() { return { idx: this.value, label: $(this).text().trim() }; }).get();
+
+        subMatCombo.setItems($combo, items);
+        subMatCombo.setDisabled($combo, false);
+
+        if (current && items.some(it => String(it.idx) === String(current))) {
+            subMatCombo.selectByKey($combo, current);
+        } else {
+            subMatCombo.clear($combo);
+        }
     }
 
     // Same loading & dumping area — warn, don't block
@@ -41,14 +112,17 @@
         const $last = $(this).closest('.card-body').find('.dt-trip-row').last();
         if (!$last.length) return;
 
-        $form.find('.dt-loader').val(String($last.data('loader') || ''));
+        loaderCombo.selectByKey($form.find('.dt-loader-combo'), $last.data('loader'));
+
         $form.find('.dt-mat-cat input[value="' + $last.data('mat-cat') + '"]')
              .prop('checked', true).trigger('change');
-        $form.find('.dt-submat').val(String($last.data('sub-mat') || ''));
-        $form.find('.dt-from').val(String($last.data('from') || '')).trigger('change');
+        subMatCombo.selectByKey($form.find('.dt-submat-combo'), $last.data('sub-mat'));
+
+        fromCombo.selectByKey($form.find('.dt-from-combo'), $last.data('from'));
         $form.find('.dt-from-note').val($last.data('from-note') || '');
-        $form.find('.dt-dest').val(String($last.data('dest') || ''));
+        destCombo.selectByKey($form.find('.dt-dest-combo'), $last.data('dest'));
         $form.find('.dt-dest-note').val($last.data('dest-note') || '');
+
         $form.find('.dt-material-note').val($last.data('material-note') || '');
         $form.find('.dt-driver-note').val($last.data('driver-note') || '');
     });
@@ -70,8 +144,8 @@
 
         $form.find('.dt-time').toggleClass('is-invalid', !time);
         $form.find('.dt-mat-required').toggleClass('d-none', !!matCat);
-        $form.find('.dt-from').toggleClass('is-invalid', !from);
-        $form.find('.dt-dest').toggleClass('is-invalid', !dest);
+        $form.find('.dt-from-search').toggleClass('is-invalid', !from);
+        $form.find('.dt-dest-search').toggleClass('is-invalid', !dest);
         if (!time || !matCat || !from || !dest) return;
 
         $form.find('.dt-trip-error').addClass('d-none');

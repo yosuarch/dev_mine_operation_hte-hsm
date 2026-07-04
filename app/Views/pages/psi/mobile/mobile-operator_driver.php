@@ -59,13 +59,13 @@
         color: var(--bs-body-color);
     }
 
-    /* ── Searchable name dropdown (combobox) ─────────────── */
-    .mp-combo-input {
+    /* ── Searchable combobox (name / equipment type / equipment id) ──── */
+    .combo-input {
         padding-left: 2.7rem;
         padding-right: 4.6rem;
     }
 
-    .mp-combo-search-icon {
+    .combo-search-icon {
         position: absolute;
         left: 1rem;
         top: 1.6rem;
@@ -76,7 +76,7 @@
         z-index: 5;
     }
 
-    .mp-combo-chevron {
+    .combo-chevron {
         position: absolute;
         right: 1rem;
         top: 1.6rem;
@@ -88,11 +88,11 @@
         z-index: 5;
     }
 
-    .mp-combo.open .mp-combo-chevron {
+    .combo.open .combo-chevron {
         transform: translateY(-50%) rotate(180deg);
     }
 
-    .mp-combo-clear {
+    .combo-clear {
         position: absolute;
         right: 2.6rem;
         top: 1.6rem;
@@ -110,7 +110,7 @@
         z-index: 5;
     }
 
-    .mp-combo-menu {
+    .combo-menu {
         position: absolute;
         top: calc(3.2rem + 6px);
         left: 0;
@@ -123,17 +123,17 @@
         overflow: hidden;
     }
 
-    [data-bs-theme="dark"] .mp-combo-menu {
+    [data-bs-theme="dark"] .combo-menu {
         box-shadow: 0 12px 28px rgba(0, 0, 0, 0.45);
     }
 
-    .mp-combo-list {
+    .combo-list {
         max-height: 272px;
         overflow-y: auto;
         overscroll-behavior: contain;
     }
 
-    .mp-combo-option {
+    .combo-option {
         padding: 0.65rem 1rem;
         cursor: pointer;
         display: flex;
@@ -142,42 +142,47 @@
         gap: 0.75rem;
     }
 
-    .mp-combo-option + .mp-combo-option {
+    .combo-option + .combo-option {
         border-top: 1px solid var(--bs-border-color-translucent);
     }
 
-    .mp-combo-option:hover,
-    .mp-combo-option.active {
+    .combo-option:hover,
+    .combo-option.active {
         background: var(--bs-secondary-bg);
     }
 
-    .mp-combo-option .mp-name {
+    .combo-option .mp-name {
         font-weight: 600;
         font-size: 0.98rem;
     }
 
-    .mp-combo-option .mp-id {
+    .combo-option .mp-id {
         font-size: 0.75rem;
         color: var(--bs-secondary-color);
     }
 
-    .mp-combo-option mark {
+    .combo-option mark {
         background: transparent;
         color: var(--bs-primary);
         font-weight: 700;
         padding: 0;
     }
 
-    .mp-combo-option .mp-check {
+    .combo-option .combo-check {
         color: var(--bs-primary);
         font-size: 0.85rem;
     }
 
-    .mp-combo-empty {
+    .combo-empty {
         padding: 1.1rem 1rem;
         text-align: center;
         color: var(--bs-secondary-color);
         font-size: 0.9rem;
+    }
+
+    .combo-input:disabled {
+        cursor: not-allowed;
+        opacity: 0.65;
     }
 
     /* ── P2H checklist item cards ────────────────────────── */
@@ -259,20 +264,20 @@
 
                     <div class="mb-4">
                         <label for="mpSearch" class="form-label fw-semibold fs-6">Full Name</label>
-                        <div id="mpCombo" class="mp-combo position-relative">
-                            <span class="mp-combo-search-icon"><i class="fas fa-magnifying-glass"></i></span>
-                            <input type="text" class="form-control form-control-lg mp-combo-input" id="mpSearch"
+                        <div id="mpCombo" class="combo position-relative">
+                            <span class="combo-search-icon"><i class="fas fa-magnifying-glass"></i></span>
+                            <input type="text" class="form-control form-control-lg combo-input" id="mpSearch"
                                 placeholder="Search your name..." autocomplete="off"
                                 role="combobox" aria-expanded="false" aria-controls="mpDropdown"
                                 aria-autocomplete="list" aria-haspopup="listbox">
-                            <button type="button" id="mpClearBtn" class="mp-combo-clear" aria-label="Clear selection"
+                            <button type="button" id="mpClearBtn" class="combo-clear" aria-label="Clear selection"
                                 tabindex="-1" style="display:none;">
                                 <i class="fas fa-xmark"></i>
                             </button>
-                            <span class="mp-combo-chevron"><i class="fas fa-chevron-down"></i></span>
-                            <div id="mpDropdown" class="mp-combo-menu" role="listbox" aria-label="Operator and driver names"
+                            <span class="combo-chevron"><i class="fas fa-chevron-down"></i></span>
+                            <div id="mpDropdown" class="combo-menu" role="listbox" aria-label="Operator and driver names"
                                 style="display:none;">
-                                <div class="mp-combo-list"></div>
+                                <div class="combo-list"></div>
                             </div>
                             <div class="invalid-feedback">Please select a valid operator / driver name.</div>
                         </div>
@@ -300,18 +305,46 @@
                     <p class="text-muted mb-4" style="font-size:0.9rem;">Select the equipment you will operate this shift.</p>
 
                     <div class="mb-4">
-                        <label for="equipType" class="form-label fw-semibold fs-6">Equipment Type</label>
-                        <select class="form-select form-select-lg" id="equipType" name="equipType">
-                            <option selected value="">Select Equipment Type</option>
-                        </select>
+                        <label for="equipTypeSearch" class="form-label fw-semibold fs-6">Equipment Type</label>
+                        <div id="equipTypeCombo" class="combo position-relative">
+                            <span class="combo-search-icon"><i class="fas fa-magnifying-glass"></i></span>
+                            <input type="text" class="form-control form-control-lg combo-input" id="equipTypeSearch"
+                                placeholder="Select Equipment Type" autocomplete="off"
+                                role="combobox" aria-expanded="false" aria-controls="equipTypeDropdown"
+                                aria-autocomplete="list" aria-haspopup="listbox">
+                            <button type="button" id="equipTypeClearBtn" class="combo-clear" aria-label="Clear selection"
+                                tabindex="-1" style="display:none;">
+                                <i class="fas fa-xmark"></i>
+                            </button>
+                            <span class="combo-chevron"><i class="fas fa-chevron-down"></i></span>
+                            <div id="equipTypeDropdown" class="combo-menu" role="listbox" aria-label="Equipment types"
+                                style="display:none;">
+                                <div class="combo-list"></div>
+                            </div>
+                        </div>
+                        <input type="hidden" id="equipType" name="equipType">
                     </div>
 
                     <div>
-                        <label for="equipID" class="form-label fw-semibold fs-6">Equipment ID</label>
-                        <select class="form-select form-select-lg" id="equipID" name="equipID">
-                            <option value="">Select Equipment ID</option>
-                        </select>
-                        <div class="invalid-feedback">Please select an equipment to load the checklist.</div>
+                        <label for="equipIDSearch" class="form-label fw-semibold fs-6">Equipment ID</label>
+                        <div id="equipIDCombo" class="combo position-relative">
+                            <span class="combo-search-icon"><i class="fas fa-magnifying-glass"></i></span>
+                            <input type="text" class="form-control form-control-lg combo-input" id="equipIDSearch"
+                                placeholder="Select Equipment Type first" autocomplete="off" disabled
+                                role="combobox" aria-expanded="false" aria-controls="equipIDDropdown"
+                                aria-autocomplete="list" aria-haspopup="listbox">
+                            <button type="button" id="equipIDClearBtn" class="combo-clear" aria-label="Clear selection"
+                                tabindex="-1" style="display:none;">
+                                <i class="fas fa-xmark"></i>
+                            </button>
+                            <span class="combo-chevron"><i class="fas fa-chevron-down"></i></span>
+                            <div id="equipIDDropdown" class="combo-menu" role="listbox" aria-label="Equipment IDs"
+                                style="display:none;">
+                                <div class="combo-list"></div>
+                            </div>
+                            <div class="invalid-feedback">Please select an equipment to load the checklist.</div>
+                        </div>
+                        <input type="hidden" id="equipID" name="equipID">
                     </div>
                 </div>
             </div>
@@ -472,6 +505,7 @@
 
 <?= $this->section('script'); ?>
 <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+<?= $this->include('pages/psi/mobile/script/script-combobox'); ?>
 <?= $this->include('pages/psi/mobile/script/script-operator_driver_name_id'); ?>
 <?= $this->include('pages/psi/mobile/script/script-equipment_type_unique'); ?>
 <?= $this->include('pages/psi/mobile/script/script-equipment_id'); ?>
