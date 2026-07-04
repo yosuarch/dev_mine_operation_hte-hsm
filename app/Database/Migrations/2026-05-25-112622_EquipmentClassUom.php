@@ -8,7 +8,7 @@ class EquipmentClassUom extends Migration
 {
     // common info
     protected $table = 'equipment_class_uom';
-    protected $DBGroup = 'default';
+    protected $DBGroup = 'appsDBGroup';
 
     public function up()
     {

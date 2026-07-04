@@ -9,7 +9,7 @@ class EquipmentUniqueType extends Migration
 
     // common info
     protected $table = 'equipment_unique_type';
-    protected $DBGroup = 'default';
+    protected $DBGroup = 'appsDBGroup';
 
     public function up()
     {
@@ -27,6 +27,12 @@ class EquipmentUniqueType extends Migration
                 'null' => false,
                 'comment' => 'unique equipment type',
             ],
+            'abbreviation' => [
+                'type' => 'varchar',
+                'constraint' => 64,
+                'null' => true,
+                'comment' => 'the abbreviation of the type',
+            ],
         ]);
 
 
@@ -35,11 +41,12 @@ class EquipmentUniqueType extends Migration
         $this->forge->addUniqueKey('code', "uq_" . $this->table . '_for_idx');
 
         // create the table
-        $this->forge->createTable($this->table);
+        $this->forge->createTable($this->table, true);
     }
 
     public function down()
     {
-        //
+        // drop the table
+        $this->forge->dropTable($this->table);
     }
 }

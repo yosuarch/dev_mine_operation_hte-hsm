@@ -9,7 +9,7 @@ class EquipmentCapacityFrom extends Migration
 
     // common info
     protected $table = 'equipment_capacity_from';
-    protected $DBGroup = 'default';
+    protected $DBGroup = 'appsDBGroup';
 
     public function up()
     {

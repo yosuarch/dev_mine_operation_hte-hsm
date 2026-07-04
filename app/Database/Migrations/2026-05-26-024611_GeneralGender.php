@@ -9,7 +9,7 @@ class GeneralGender extends Migration
 
     // common info
     protected $table = 'general_gender';
-    protected $DBGroup = 'default';
+    protected $DBGroup = 'appsDBGroup';
 
     public function up()
     {
