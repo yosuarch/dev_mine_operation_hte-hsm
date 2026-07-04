@@ -32,6 +32,12 @@
             <span class="sidebar-text">Manpower</span>
         </a>
 
+        <a class="nav-link" href="/hauling-activity"
+            data-sidebar-tip="Hauling Activity">
+            <i class="fas fa-truck-moving"></i>
+            <span class="sidebar-text">Hauling Activity</span>
+        </a>
+
         <span class="sidebar-section-label">Settings</span>
 
         <a class="nav-link" href="/notification-target"
@@ -116,6 +122,11 @@
             <a class="nav-link" href="/manpower">
                 <i class="fas fa-users"></i>
                 <span class="sidebar-text">Manpower</span>
+            </a>
+
+            <a class="nav-link" href="/hauling-activity">
+                <i class="fas fa-truck-moving"></i>
+                <span class="sidebar-text">Hauling Activity</span>
             </a>
 
             <span class="sidebar-section-label" style="opacity:.45;font-size:.62rem;font-weight:700;letter-spacing:.09em;text-transform:uppercase;padding:14px 20px 2px;display:block;">Settings</span>

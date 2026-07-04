@@ -16,6 +16,18 @@ class ControllerGetData extends BaseController
         $data = new ManPowerList();
         $query = $data->fetchManpPowerList();
 
-        return DataTable::of($query)->toJson();
+        // returnAsObject=true so the view can read named fields (row.idx, row.name, ...)
+        return DataTable::of($query)->toJson(true);
+    }
+
+    public function kpiData()
+    {
+        $model = new ManPowerList();
+
+        return $this->response->setJSON([
+            'kpi'    => $model->fetchGenderKpi(),
+            'gender' => $model->fetchGenderOptions(),
+            'roles'  => $model->fetchRoleOptions(),
+        ]);
     }
 }
