@@ -88,8 +88,24 @@ $multiple = count($openShifts) > 1;
                         <label class="form-label fw-semibold small mb-1">
                             Loader <span class="text-muted fw-normal">(leave empty if unknown)</span>
                         </label>
-                        <select class="form-select form-select-lg dt-loader">
-                            <option value="">Unknown / no loader</option>
+                        <div class="combo position-relative dt-loader-combo">
+                            <span class="combo-search-icon"><i class="fas fa-magnifying-glass"></i></span>
+                            <input type="text" class="form-control form-control-lg combo-input dt-loader-search"
+                                   placeholder="Unknown / no loader" autocomplete="off"
+                                   role="combobox" aria-expanded="false" aria-haspopup="listbox" aria-autocomplete="list">
+                            <button type="button" class="combo-clear dt-loader-clear" aria-label="Clear selection"
+                                    tabindex="-1" style="display:none;">
+                                <i class="fas fa-xmark"></i>
+                            </button>
+                            <span class="combo-chevron"><i class="fas fa-chevron-down"></i></span>
+                            <div class="combo-menu dt-loader-dropdown" role="listbox" aria-label="Loader"
+                                 style="display:none;">
+                                <div class="combo-list"></div>
+                            </div>
+                        </div>
+                        <input type="hidden" class="dt-loader" value="">
+                        <!-- Data pool for the combo above (never shown) -->
+                        <select class="dt-loader-pool d-none" tabindex="-1" aria-hidden="true">
                             <?php foreach ($formLookups['loaders'] ?? [] as $l): ?>
                                 <option value="<?= esc($l['idx'], 'attr') ?>"><?= esc($l['equipment_id']) ?></option>
                             <?php endforeach; ?>
@@ -116,9 +132,22 @@ $multiple = count($openShifts) > 1;
                         <label class="form-label fw-semibold small mb-1">
                             Sub Material <span class="text-muted fw-normal">(optional)</span>
                         </label>
-                        <select class="form-select form-select-lg dt-submat" disabled>
-                            <option value="">Select material first</option>
-                        </select>
+                        <div class="combo position-relative dt-submat-combo">
+                            <span class="combo-search-icon"><i class="fas fa-magnifying-glass"></i></span>
+                            <input type="text" class="form-control form-control-lg combo-input dt-submat-search"
+                                   placeholder="Select material first" autocomplete="off" disabled
+                                   role="combobox" aria-expanded="false" aria-haspopup="listbox" aria-autocomplete="list">
+                            <button type="button" class="combo-clear dt-submat-clear" aria-label="Clear selection"
+                                    tabindex="-1" style="display:none;">
+                                <i class="fas fa-xmark"></i>
+                            </button>
+                            <span class="combo-chevron"><i class="fas fa-chevron-down"></i></span>
+                            <div class="combo-menu dt-submat-dropdown" role="listbox" aria-label="Sub material"
+                                 style="display:none;">
+                                <div class="combo-list"></div>
+                            </div>
+                        </div>
+                        <input type="hidden" class="dt-submat" value="">
                         <!-- Full option pool for the cascading filter (never shown) -->
                         <select class="dt-submat-all d-none" tabindex="-1" aria-hidden="true">
                             <?php foreach ($formLookups['subMats'] ?? [] as $sm): ?>
@@ -139,32 +168,57 @@ $multiple = count($openShifts) > 1;
                                   style="font-size:0.95rem;resize:none;"></textarea>
                     </div>
 
+                    <!-- Shared data pool for both Loaded From and Dumping Area combos (never shown) -->
+                    <select class="dt-source-pool d-none" tabindex="-1" aria-hidden="true">
+                        <?php foreach ($formLookups['sources'] ?? [] as $src): ?>
+                            <option value="<?= esc($src['idx'], 'attr') ?>">
+                                <?= esc(ucwords(str_replace('_', ' ', $src['source']))) ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+
                     <div class="mb-3">
                         <label class="form-label fw-semibold small mb-1">Loaded From</label>
-                        <select class="form-select form-select-lg dt-from">
-                            <option value="">Select loading area</option>
-                            <?php foreach ($formLookups['sources'] ?? [] as $src): ?>
-                                <option value="<?= esc($src['idx'], 'attr') ?>">
-                                    <?= esc(ucwords(str_replace('_', ' ', $src['source']))) ?>
-                                </option>
-                            <?php endforeach; ?>
-                        </select>
-                        <div class="invalid-feedback">Loading area is required.</div>
+                        <div class="combo position-relative dt-from-combo">
+                            <span class="combo-search-icon"><i class="fas fa-magnifying-glass"></i></span>
+                            <input type="text" class="form-control form-control-lg combo-input dt-from-search"
+                                   placeholder="Select loading area" autocomplete="off"
+                                   role="combobox" aria-expanded="false" aria-haspopup="listbox" aria-autocomplete="list">
+                            <button type="button" class="combo-clear dt-from-clear" aria-label="Clear selection"
+                                    tabindex="-1" style="display:none;">
+                                <i class="fas fa-xmark"></i>
+                            </button>
+                            <span class="combo-chevron"><i class="fas fa-chevron-down"></i></span>
+                            <div class="combo-menu dt-from-dropdown" role="listbox" aria-label="Loading area"
+                                 style="display:none;">
+                                <div class="combo-list"></div>
+                            </div>
+                            <div class="invalid-feedback">Loading area is required.</div>
+                        </div>
+                        <input type="hidden" class="dt-from" value="">
                         <input type="text" class="form-control mt-2 dt-from-note" maxlength="64"
                                placeholder="Loading area note (optional)">
                     </div>
 
                     <div class="mb-3">
                         <label class="form-label fw-semibold small mb-1">Dumping Area</label>
-                        <select class="form-select form-select-lg dt-dest">
-                            <option value="">Select dumping area</option>
-                            <?php foreach ($formLookups['sources'] ?? [] as $src): ?>
-                                <option value="<?= esc($src['idx'], 'attr') ?>">
-                                    <?= esc(ucwords(str_replace('_', ' ', $src['source']))) ?>
-                                </option>
-                            <?php endforeach; ?>
-                        </select>
-                        <div class="invalid-feedback">Dumping area is required.</div>
+                        <div class="combo position-relative dt-dest-combo">
+                            <span class="combo-search-icon"><i class="fas fa-magnifying-glass"></i></span>
+                            <input type="text" class="form-control form-control-lg combo-input dt-dest-search"
+                                   placeholder="Select dumping area" autocomplete="off"
+                                   role="combobox" aria-expanded="false" aria-haspopup="listbox" aria-autocomplete="list">
+                            <button type="button" class="combo-clear dt-dest-clear" aria-label="Clear selection"
+                                    tabindex="-1" style="display:none;">
+                                <i class="fas fa-xmark"></i>
+                            </button>
+                            <span class="combo-chevron"><i class="fas fa-chevron-down"></i></span>
+                            <div class="combo-menu dt-dest-dropdown" role="listbox" aria-label="Dumping area"
+                                 style="display:none;">
+                                <div class="combo-list"></div>
+                            </div>
+                            <div class="invalid-feedback">Dumping area is required.</div>
+                        </div>
+                        <input type="hidden" class="dt-dest" value="">
                         <div class="text-warning small mt-1 d-none dt-same-warning">
                             <i class="fas fa-triangle-exclamation me-1"></i>Loading and dumping area are the same.
                         </div>

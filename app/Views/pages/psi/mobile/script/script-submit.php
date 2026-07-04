@@ -22,12 +22,12 @@
             }
 
             // 3. Validate equipment selected and checklist loaded
-            const equipTypeLabel = $('#equipType option:selected').text();
+            const equipTypeLabel = $('#equipTypeSearch').val();
             const equipIdx       = $('#equipID').val();
-            const equipIDLabel   = $('#equipID option:selected').text();
+            const equipIDLabel   = $('#equipIDSearch').val();
             const totalItems     = $('[id^="good-"]').length;
             if (!equipIdx || totalItems === 0) {
-                $('#equipID').addClass('is-invalid');
+                $('#equipIDSearch').addClass('is-invalid');
                 valid = false;
             }
 
